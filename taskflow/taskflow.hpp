@@ -20,8 +20,8 @@
 */
 
 /**
-@dir taskflow/cuda
-@brief taskflow CUDA include dir
+@dir taskflow/hip
+@brief taskflow HIP include dir
 */
 
 /**

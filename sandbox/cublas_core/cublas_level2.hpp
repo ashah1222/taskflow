@@ -9,7 +9,7 @@ namespace tf {
 // ----------------------------------------------------------------------------
 
 template <typename T>
-cudaTask cublasFlowCapturer::gemv(
+hipTask cublasFlowCapturer::gemv(
   cublasOperation_t trans,
   int m, int n,
   const T *alpha,
@@ -19,7 +19,7 @@ cudaTask cublasFlowCapturer::gemv(
   T *y, int incy
 ) {
   return factory()->on([this, trans, m, n, alpha, A, lda, x, incx, beta, y, incy]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
     _stream(stream);
 
     cublasStatus_t stat;
@@ -44,7 +44,7 @@ cudaTask cublasFlowCapturer::gemv(
 
 // gemv
 template <typename T>
-cudaTask cublasFlowCapturer::c_gemv(
+hipTask cublasFlowCapturer::c_gemv(
   cublasOperation_t trans,
   int m, int n,
   const T *alpha,
@@ -60,14 +60,14 @@ cudaTask cublasFlowCapturer::c_gemv(
 
 // trmv
 template <typename T>
-cudaTask cublasFlowCapturer::trmv(
+hipTask cublasFlowCapturer::trmv(
   cublasFillMode_t uplo,
   cublasOperation_t tran, cublasDiagType_t diag,
   int n, const T* A, int lda,
   T *x, int incx
 ) {
   return factory()->on([this, uplo, tran, diag, n, A, lda, x, incx]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
 
     _stream(stream);
 
@@ -89,7 +89,7 @@ cudaTask cublasFlowCapturer::trmv(
 
 // c_trmv
 template <typename T>
-cudaTask cublasFlowCapturer::c_trmv(
+hipTask cublasFlowCapturer::c_trmv(
   cublasFillMode_t uplo,
   cublasOperation_t tran, cublasDiagType_t diag,
   int n, const T* A, int lda,
@@ -102,14 +102,14 @@ cudaTask cublasFlowCapturer::c_trmv(
 
 // trsv
 template <typename T>
-cudaTask cublasFlowCapturer::trsv(
+hipTask cublasFlowCapturer::trsv(
   cublasFillMode_t uplo,
   cublasOperation_t tran, cublasDiagType_t diag,
   int n, const T* A, int lda,
   T *x, int incx
 ) {
   return factory()->on([this, uplo, tran, diag, n, A, lda, x, incx]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
 
     _stream(stream);
 
@@ -131,7 +131,7 @@ cudaTask cublasFlowCapturer::trsv(
 
 // c_trsv
 template <typename T>
-cudaTask cublasFlowCapturer::c_trsv(
+hipTask cublasFlowCapturer::c_trsv(
   cublasFillMode_t uplo,
   cublasOperation_t tran, cublasDiagType_t diag,
   int n, const T* A, int lda,
@@ -144,7 +144,7 @@ cudaTask cublasFlowCapturer::c_trsv(
 
 // symv
 template <typename T>
-cudaTask cublasFlowCapturer::symv(
+hipTask cublasFlowCapturer::symv(
   cublasFillMode_t uplo,
   int n,
   const T *alpha,
@@ -154,7 +154,7 @@ cudaTask cublasFlowCapturer::symv(
   T *y, int incy
 ) {
   return factory()->on([this, uplo, n, alpha, A, lda, x, incx, beta, y, incy]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
 
     _stream(stream);
 
@@ -176,7 +176,7 @@ cudaTask cublasFlowCapturer::symv(
 
 // c_symv
 template <typename T>
-cudaTask cublasFlowCapturer::c_symv(
+hipTask cublasFlowCapturer::c_symv(
   cublasFillMode_t uplo,
   int n,
   const T *alpha,
@@ -192,7 +192,7 @@ cudaTask cublasFlowCapturer::c_symv(
 
 // syr
 template <typename T>
-cudaTask cublasFlowCapturer::syr(
+hipTask cublasFlowCapturer::syr(
   cublasFillMode_t uplo,
   int n,
   const T *alpha,
@@ -201,7 +201,7 @@ cudaTask cublasFlowCapturer::syr(
 ) {
 
   return factory()->on([this, uplo, n, alpha, x, incx, A, lda]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
 
     _stream(stream);
 
@@ -223,7 +223,7 @@ cudaTask cublasFlowCapturer::syr(
 
 // c_syr
 template <typename T>
-cudaTask cublasFlowCapturer::c_syr(
+hipTask cublasFlowCapturer::c_syr(
   cublasFillMode_t uplo,
   int n,
   const T *alpha,
@@ -237,7 +237,7 @@ cudaTask cublasFlowCapturer::c_syr(
 
 // syr2
 template <typename T>
-cudaTask cublasFlowCapturer::syr2(
+hipTask cublasFlowCapturer::syr2(
   cublasFillMode_t uplo,
   int n,
   const T *alpha,
@@ -247,7 +247,7 @@ cudaTask cublasFlowCapturer::syr2(
 ) {
 
   return factory()->on([this, uplo, n, alpha, x, incx, y, incy, A, lda]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
 
     _stream(stream);
 
@@ -269,7 +269,7 @@ cudaTask cublasFlowCapturer::syr2(
 
 // c_syr2
 template <typename T>
-cudaTask cublasFlowCapturer::c_syr2(
+hipTask cublasFlowCapturer::c_syr2(
   cublasFillMode_t uplo,
   int n,
   const T *alpha,

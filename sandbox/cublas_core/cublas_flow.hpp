@@ -20,10 +20,10 @@ namespace tf {
 
 %cublasFlowCapturer provides a higher-level interface over the @cuBLAS library
 and hide concurrency details from users.
-It inherits methods from tf::cudaFlowCapturerBase and must be used from
-a tf::cudaFlowCapturer object.
+It inherits methods from tf::hipFlowCapturerBase and must be used from
+a tf::hipFlowCapturer object.
 All pointers used to %cublasFlowCapturer methods must be in GPU memory space or managed
-(i.e., @c cudaMallocManaged),
+(i.e., @c hipMallocManaged),
 including scalars, @c alpha and @c beta, input data and output data pointers.
 The following example uses @c cublas<t>amax to find the minimum index of the element
 of the maximum absolute magnitude in a vector.
@@ -43,15 +43,15 @@ int main() {
   std::vector<float> host(N, 0.0f);
   host[512] = 100.0f;  // artificially set the mid-position to the largest
 
-  cudaMalloc(&x, N*sizeof(float));
-  cudaMalloc(&d_res, sizeof(int));
+  hipMalloc(&x, N*sizeof(float));
+  hipMalloc(&d_res, sizeof(int));
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
     auto* cublas = capturer.make_capturer<tf::cublasFlowCapturer>();
 
-    tf::cudaTask h2d      = capturer.copy(x, host.data(), N);
-    tf::cudaTask find_max = cublas->amax(N, x, 1, d_res);
-    tf::cudaTask d2h      = capturer.copy(&h_res, d_res, 1);
+    tf::hipTask h2d      = capturer.copy(x, host.data(), N);
+    tf::hipTask find_max = cublas->amax(N, x, 1, d_res);
+    tf::hipTask d2h      = capturer.copy(&h_res, d_res, 1);
 
     h2d.precede(find_max);  // amax runs before host-to-device copy
     find_max.precede(d2h);  // amax runs after  device-to-host copy
@@ -70,7 +70,7 @@ high-performance @cuBLAS library.
 You may refer to @cuBLAS for more details.
 
 */
-class cublasFlowCapturer : public cudaFlowCapturerBase {
+class cublasFlowCapturer : public hipFlowCapturerBase {
 
   public:
 
@@ -105,12 +105,12 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param h source host pointer
     @param inch spacing between consecutive elements in @c h
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T,
       std::enable_if_t<!std::is_same_v<T, void>, void>* = nullptr
     >
-    cudaTask vset(size_t n, const T* h, int inch, T* d, int incd);
+    hipTask vset(size_t n, const T* h, int inch, T* d, int incd);
 
     /**
     @brief copies vector data from device to host
@@ -131,12 +131,12 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param d source device pointer
     @param incd spacing between consecutive elements in @c d
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T,
       std::enable_if_t<!std::is_same_v<T, void>, void>* = nullptr
     >
-    cudaTask vget(size_t n, const T* d, int incd, T* h, int inch);
+    hipTask vget(size_t n, const T* d, int incd, T* h, int inch);
 
     // ------------------------------------------------------------------------
     // Level-1 vector-vector operations
@@ -157,10 +157,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param incx stride between consecutive elements of @c x
     @param result the resulting index (1-based indexing)
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask amax(int n, const T* x, int incx, int* result);
+    hipTask amax(int n, const T* x, int incx, int* result);
 
     /**
     @brief finds the smallest index of the element of the minimum
@@ -177,10 +177,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param incx stride between consecutive elements of @c x
     @param result the resulting index (1-based indexing)
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask amin(int n, const T* x, int incx, int* result);
+    hipTask amin(int n, const T* x, int incx, int* result);
 
     /**
     @brief finds the sum of absolute values of the elements over a vector
@@ -196,10 +196,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param incx stride between consecutive elements of @c x
     @param result the result
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask asum(int n, const T* x, int incx, T* result);
+    hipTask asum(int n, const T* x, int incx, T* result);
 
     /**
     @brief multiples a vector by a scalar and adds it to a vector
@@ -226,10 +226,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param y pointer to the memory address of the vector @c y
     @param incy stride between consecutive elements of @c y
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask axpy(
+    hipTask axpy(
       int n, const T *alpha, const T *x, int incx, T *y, int incy
     );
 
@@ -259,10 +259,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param y pointer to the memory address of the vector @c y
     @param incy stride between consecutive elements of @c y
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask vcopy(int n, const T* x, int incx, T* y, int incy);
+    hipTask vcopy(int n, const T* x, int incx, T* y, int incy);
 
     /**
     @brief computes the dot product of two vectors
@@ -282,10 +282,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param incy stride between consecutive elements of @c y
     @param result the resulting dot product
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask dot(int n, const T* x, int incx, const T* y, int incy, T* result);
+    hipTask dot(int n, const T* x, int incx, const T* y, int incy, T* result);
 
     /**
     @brief computes the Euclidean norm of a vector
@@ -301,10 +301,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param incx stride between consecutive elements of @c x
     @param result the result
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask nrm2(int n, const T* x, int incx, T* result);
+    hipTask nrm2(int n, const T* x, int incx, T* result);
 
     /**
     @brief scales a vector by a scalar
@@ -320,10 +320,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param x pointer to the memory address of the vector
     @param incx stride between consecutive elements of @c x
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask scal(int n, const T* scalar, T* x, int incx);
+    hipTask scal(int n, const T* scalar, T* x, int incx);
 
     /**
     @brief swaps elements between two vectors
@@ -348,10 +348,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param y pointer to the memory address of the vector @c y
     @param incy stride between consecutive elements of @c y
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask swap(int n, T* x, int incx, T* y, int incy);
+    hipTask swap(int n, T* x, int incx, T* y, int incy);
 
     // ------------------------------------------------------------------------
     // TODO Level-2 matrix_vector operations
@@ -390,11 +390,11 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param y pointer to the address of @c y
     @param incy stride between consecutive elements of @c y
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
 
     template <typename T>
-    cudaTask gemv(
+    hipTask gemv(
       cublasOperation_t trans,
       int m, int n,
       const T *alpha,
@@ -410,7 +410,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     */
 
     template <typename T>
-    cudaTask c_gemv(
+    hipTask c_gemv(
       cublasOperation_t trans,
       int m, int n,
       const T *alpha,
@@ -450,10 +450,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param y pointer to the address of @c y
     @param incy stride between consecutive elements of @c y
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask symv(
+    hipTask symv(
       cublasFillMode_t uplo,
       int n,
       const T *alpha,
@@ -468,7 +468,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            C-styled row-major layout
     */
     template <typename T>
-    cudaTask c_symv(
+    hipTask c_symv(
       cublasFillMode_t uplo,
       int n,
       const T *alpha,
@@ -508,10 +508,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param A pointer to the address of @c A
     @param lda leading dimension of 2D array used to store the matrix @c A
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask syr(
+    hipTask syr(
       cublasFillMode_t uplo,
       int n,
       const T *alpha,
@@ -524,7 +524,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            C-styled row-major layout
     */
     template <typename T>
-    cudaTask c_syr(
+    hipTask c_syr(
       cublasFillMode_t uplo,
       int n,
       const T *alpha,
@@ -564,10 +564,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param A pointer to the address of @c A
     @param lda leading dimension of 2D array used to store the matrix @c A
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask syr2(
+    hipTask syr2(
       cublasFillMode_t uplo,
       int n,
       const T *alpha,
@@ -581,7 +581,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            C-styled row-major layout
     */
     template <typename T>
-    cudaTask c_syr2(
+    hipTask c_syr2(
       cublasFillMode_t uplo,
       int n,
       const T *alpha,
@@ -614,7 +614,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param incx stride between consecutive elements of @c x
     */
     template <typename T>
-    cudaTask trmv(
+    hipTask trmv(
       cublasFillMode_t uplo,
       cublasOperation_t tran, cublasDiagType_t diag,
       int n, const T* A, int lda,
@@ -626,7 +626,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            row-major layout
     */
     template <typename T>
-    cudaTask c_trmv(
+    hipTask c_trmv(
       cublasFillMode_t uplo,
       cublasOperation_t tran, cublasDiagType_t diag,
       int n, const T* A, int lda,
@@ -657,7 +657,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param incx stride between consecutive elements of @c x
     */
     template <typename T>
-    cudaTask trsv(
+    hipTask trsv(
       cublasFillMode_t uplo,
       cublasOperation_t tran, cublasDiagType_t diag,
       int n, const T* A, int lda,
@@ -669,7 +669,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     row-major layout
     */
     template <typename T>
-    cudaTask c_trsv(
+    hipTask c_trsv(
       cublasFillMode_t uplo,
       cublasOperation_t tran, cublasDiagType_t diag,
       int n, const T* A, int lda,
@@ -730,10 +730,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param C pointer to the address of @c C
     @param ldc leading dimension of 2D array used to store the matrix @c C
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask geam(
+    hipTask geam(
       cublasOperation_t ta, cublasOperation_t tb,
       int m, int n,
       const T *alpha,
@@ -747,7 +747,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @brief similar to tf::cublasFlowCapturer::geam but on row-major layout
     */
     template <typename T>
-    cudaTask c_geam(
+    hipTask c_geam(
       cublasOperation_t ta, cublasOperation_t tb,
       int m, int n,
       const T *alpha,
@@ -791,10 +791,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param C pointer to the address of @c C
     @param ldc leading dimension of 2D array used to store the matrix @c C
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask gemm(
+    hipTask gemm(
       cublasOperation_t ta, cublasOperation_t tb,
       int m, int n, int k,
       const T *alpha,
@@ -809,7 +809,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            row-major layout
     */
     template <typename T>
-    cudaTask c_gemm(
+    hipTask c_gemm(
       cublasOperation_t ta, cublasOperation_t tb,
       int m, int n, int k,
       const T *alpha,
@@ -860,10 +860,10 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param ldc leading dimension of 2D array used to store the matrix @c C[i]
     @param bc batch size (number of matrices)
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
     */
     template <typename T>
-    cudaTask gemm_batched(
+    hipTask gemm_batched(
       cublasOperation_t ta, cublasOperation_t tb,
       int m, int n, int k,
       const T *alpha,
@@ -879,7 +879,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            C-styled row-major layout
     */
     template <typename T>
-    cudaTask c_gemm_batched(
+    hipTask c_gemm_batched(
       cublasOperation_t ta, cublasOperation_t tb,
       int m, int n, int k,
       const T *alpha,
@@ -925,7 +925,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param sC address offset between @c C[i] and @c C[i+1]
     @param bc batch size (number of matrices)
 
-    @return a tf::cudaTask handle
+    @return a tf::hipTask handle
 
     The batch must be @em uniform.
     All instances in the batch must have the same dimensions <tt>(m, n, k)</tt>,
@@ -949,7 +949,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     to take advantage of concurrent kernels, rather than this method.
     */
     template <typename T>
-    cudaTask gemm_sbatched(
+    hipTask gemm_sbatched(
       cublasOperation_t ta, cublasOperation_t tb,
       int m, int n, int k,
       const T *alpha,
@@ -965,7 +965,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            C-styled row-major layout
     */
     template <typename T>
-    cudaTask c_gemm_sbatched(
+    hipTask c_gemm_sbatched(
       cublasOperation_t ta, cublasOperation_t tb,
       int m, int n, int k,
       const T *alpha,
@@ -1013,7 +1013,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
 
     */
     template <typename T>
-    cudaTask symm(
+    hipTask symm(
       cublasSideMode_t side, cublasFillMode_t uplo,
       int m, int n,
       const T *alpha,
@@ -1028,7 +1028,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            C-styled row-major layout
     */
     template <typename T>
-    cudaTask c_symm(
+    hipTask c_symm(
       cublasSideMode_t side, cublasFillMode_t uplo,
       int m, int n,
       const T *alpha,
@@ -1070,7 +1070,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param ldc leading dimension of the 2D array used to store @c C
     */
     template <typename T>
-    cudaTask syrk(
+    hipTask syrk(
       cublasFillMode_t uplo, cublasOperation_t tran,
       int n, int k,
       const T *alpha,
@@ -1084,7 +1084,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            C-styled row-major layout
     */
     template <typename T>
-    cudaTask c_syrk(
+    hipTask c_syrk(
       cublasFillMode_t uplo, cublasOperation_t tran,
       int n, int k,
       const T *alpha,
@@ -1127,7 +1127,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param ldc leading dimension of the 2D array used to store @c C
     */
     template <typename T>
-    cudaTask syr2k(
+    hipTask syr2k(
       cublasFillMode_t uplo, cublasOperation_t tran,
       int n, int k,
       const T *alpha,
@@ -1142,7 +1142,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            C-styled row-major layout
     */
     template <typename T>
-    cudaTask c_syr2k(
+    hipTask c_syr2k(
       cublasFillMode_t uplo, cublasOperation_t tran,
       int n, int k,
       const T *alpha,
@@ -1186,7 +1186,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param ldc leading dimension of the 2D array used to store @c C
     */
     template <typename T>
-    cudaTask syrkx(
+    hipTask syrkx(
       cublasFillMode_t uplo, cublasOperation_t tran,
       int n, int k,
       const T *alpha,
@@ -1201,7 +1201,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            C-styled row-major layout
      */
     template <typename T>
-    cudaTask c_syrkx(
+    hipTask c_syrkx(
       cublasFillMode_t uplo, cublasOperation_t tran,
       int n, int k,
       const T *alpha,
@@ -1251,7 +1251,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     (with results written back to @c B).
     */
     template <typename T>
-    cudaTask trmm(
+    hipTask trmm(
       cublasSideMode_t side, cublasFillMode_t uplo,
       cublasOperation_t tran, cublasDiagType_t diag,
       int m, int n,
@@ -1266,7 +1266,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            row-major layout
     */
     template <typename T>
-    cudaTask c_trmm(
+    hipTask c_trmm(
       cublasSideMode_t side, cublasFillMode_t uplo,
       cublasOperation_t tran, cublasDiagType_t diag,
       int m, int n,
@@ -1313,7 +1313,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
     @param ldb leading dimension of the 2D array used to store @c B
      */
     template <typename T>
-    cudaTask trsm(
+    hipTask trsm(
       cublasSideMode_t side, cublasFillMode_t uplo,
       cublasOperation_t tran, cublasDiagType_t diag,
       int m, int n,
@@ -1327,7 +1327,7 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
            row-major layout
     */
     template <typename T>
-    cudaTask c_trsm(
+    hipTask c_trsm(
       cublasSideMode_t side, cublasFillMode_t uplo,
       cublasOperation_t tran, cublasDiagType_t diag,
       int m, int n,
@@ -1340,11 +1340,11 @@ class cublasFlowCapturer : public cudaFlowCapturerBase {
 
     cublasScopedPerThreadHandle _handle;
 
-    void _stream(cudaStream_t);
+    void _stream(hipStream_t);
 };
 
 // Procedure: _stream
-inline void cublasFlowCapturer::_stream(cudaStream_t stream) {
+inline void cublasFlowCapturer::_stream(hipStream_t stream) {
   TF_CHECK_CUBLAS(
     cublasSetStream(_handle, stream), "failed to set cublas stream"
   );

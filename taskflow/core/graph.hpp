@@ -357,11 +357,11 @@ class Node {
     std::function<void()> work;
   };
 
-  // cudaFlow work handle
-  struct cudaFlow {
+  // hipFlow work handle
+  struct hipFlow {
 
     template <typename C, typename G>
-    cudaFlow(C&& c, G&& g);
+    hipFlow(C&& c, G&& g);
 
     std::function<void(Executor&, Node*)> work;
 
@@ -388,7 +388,7 @@ class Node {
     Module,          // composable tasking
     Async,           // async tasking
     SilentAsync,     // async tasking (no future)
-    cudaFlow,        // cudaFlow
+    hipFlow,        // hipFlow
     syclFlow,        // syclFlow
     Runtime          // runtime tasking
   >;
@@ -409,7 +409,7 @@ class Node {
   constexpr static auto MODULE          = get_index_v<Module, handle_t>;
   constexpr static auto ASYNC           = get_index_v<Async, handle_t>;
   constexpr static auto SILENT_ASYNC    = get_index_v<SilentAsync, handle_t>;
-  constexpr static auto CUDAFLOW        = get_index_v<cudaFlow, handle_t>;
+  constexpr static auto hipFLOW        = get_index_v<hipFlow, handle_t>;
   constexpr static auto SYCLFLOW        = get_index_v<syclFlow, handle_t>;
   constexpr static auto RUNTIME         = get_index_v<Runtime, handle_t>;
 
@@ -501,11 +501,11 @@ Node::MultiCondition::MultiCondition(C&& c) : work {std::forward<C>(c)} {
 }
 
 // ----------------------------------------------------------------------------
-// Definition for Node::cudaFlow
+// Definition for Node::hipFlow
 // ----------------------------------------------------------------------------
 
 template <typename C, typename G>
-Node::cudaFlow::cudaFlow(C&& c, G&& g) :
+Node::hipFlow::hipFlow(C&& c, G&& g) :
   work  {std::forward<C>(c)},
   graph {std::forward<G>(g)} {
 }

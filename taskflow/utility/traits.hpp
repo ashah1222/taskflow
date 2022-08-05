@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <type_traits>
@@ -219,6 +220,5 @@ void visit_tuple(Func func, Tuple& tup, size_t idx) {
 
 
 }  // end of namespace tf. ----------------------------------------------------
-
 
 

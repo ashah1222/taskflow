@@ -2,7 +2,7 @@
 
 #include <doctest.h>
 #include <taskflow/taskflow.hpp>
-#include <taskflow/cudaflow.hpp>
+#include <taskflow/hipflow.hpp>
 #include <taskflow/cublasflow.hpp>
 
 template <typename T>
@@ -13,10 +13,10 @@ void copy_vec() {
 
   std::vector<T> host1(1024, -1), host2(1024, 1);
 
-  auto gpu = tf::cuda_malloc_device<T>(1024);
+  auto gpu = tf::hip_malloc_device<T>(1024);
 
-  taskflow.emplace([&](tf::cudaFlow& cf){
-    cf.capture([&](tf::cudaFlowCapturer& cap) {
+  taskflow.emplace([&](tf::hipFlow& cf){
+    cf.capture([&](tf::hipFlowCapturer& cap) {
       auto bf = cap.make_capturer<tf::cublasFlowCapturer>();
       auto h2d = bf->vset(1024, host1.data(), 1, gpu, 1);
       auto d2h = bf->vget(1024, gpu, 1, host2.data(), 1);

@@ -10,7 +10,7 @@ namespace tf {
 
 // Function: geam
 template <typename T>
-cudaTask cublasFlowCapturer::geam(
+hipTask cublasFlowCapturer::geam(
   cublasOperation_t ta, cublasOperation_t tb,
   int m, int n,
   const T *alpha,
@@ -20,7 +20,7 @@ cudaTask cublasFlowCapturer::geam(
   T *C, int ldc
 ) {
   return factory()->on([this, ta, tb, m, n, alpha, A, lda, beta, B, ldb, C, ldc]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
     _stream(stream);
     cublasStatus_t stat;
     if constexpr(std::is_same_v<T, float>) {
@@ -42,7 +42,7 @@ cudaTask cublasFlowCapturer::geam(
 
 // Function: c_geam
 template <typename T>
-cudaTask cublasFlowCapturer::c_geam(
+hipTask cublasFlowCapturer::c_geam(
   cublasOperation_t ta, cublasOperation_t tb,
   int m, int n,
   const T *alpha,
@@ -58,7 +58,7 @@ cudaTask cublasFlowCapturer::c_geam(
 
 // Function: gemm
 template <typename T>
-cudaTask cublasFlowCapturer::gemm(
+hipTask cublasFlowCapturer::gemm(
   cublasOperation_t ta, cublasOperation_t tb,
   int m, int n, int k,
   const T *alpha,
@@ -68,7 +68,7 @@ cudaTask cublasFlowCapturer::gemm(
   T *C, int ldc
 ) {
   return factory()->on([this, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
     _stream(stream);
     cublasStatus_t stat;
     if constexpr(std::is_same_v<T, float>) {
@@ -89,7 +89,7 @@ cudaTask cublasFlowCapturer::gemm(
 }
 
 template <typename T>
-cudaTask cublasFlowCapturer::c_gemm(
+hipTask cublasFlowCapturer::c_gemm(
   cublasOperation_t ta, cublasOperation_t tb,
   int m, int n, int k,
   const T *alpha,
@@ -105,7 +105,7 @@ cudaTask cublasFlowCapturer::c_gemm(
 
 // Function: gemm_batched
 template <typename T>
-cudaTask cublasFlowCapturer::gemm_batched(
+hipTask cublasFlowCapturer::gemm_batched(
   cublasOperation_t ta, cublasOperation_t tb,
   int m, int n, int k,
   const T *alpha,
@@ -116,7 +116,7 @@ cudaTask cublasFlowCapturer::gemm_batched(
   int bc
 ) {
   return factory()->on([this, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, bc]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
     _stream(stream);
     cublasStatus_t stat;
     if constexpr(std::is_same_v<T, float>) {
@@ -136,7 +136,7 @@ cudaTask cublasFlowCapturer::gemm_batched(
 
 // Function: c_gemm_batched
 template <typename T>
-cudaTask cublasFlowCapturer::c_gemm_batched(
+hipTask cublasFlowCapturer::c_gemm_batched(
   cublasOperation_t ta, cublasOperation_t tb,
   int m, int n, int k,
   const T *alpha,
@@ -153,7 +153,7 @@ cudaTask cublasFlowCapturer::c_gemm_batched(
 
 // Function: gemm_sbatched (strided)
 template <typename T>
-cudaTask cublasFlowCapturer::gemm_sbatched(
+hipTask cublasFlowCapturer::gemm_sbatched(
   cublasOperation_t ta, cublasOperation_t tb,
   int m, int n, int k,
   const T *alpha,
@@ -164,7 +164,7 @@ cudaTask cublasFlowCapturer::gemm_sbatched(
   int bc
 ) {
   return factory()->on([this, ta, tb, m, n, k, alpha, A, lda, sA, B, ldb, sB, beta, C, ldc, sC, bc]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
     _stream(stream);
     cublasStatus_t stat;
     if constexpr(std::is_same_v<T, float>) {
@@ -184,7 +184,7 @@ cudaTask cublasFlowCapturer::gemm_sbatched(
 
 // Function: c_gemm_sbatched (strided)
 template <typename T>
-cudaTask cublasFlowCapturer::c_gemm_sbatched(
+hipTask cublasFlowCapturer::c_gemm_sbatched(
   cublasOperation_t ta, cublasOperation_t tb,
   int m, int n, int k,
   const T *alpha,
@@ -201,7 +201,7 @@ cudaTask cublasFlowCapturer::c_gemm_sbatched(
 
 // symm
 template <typename T>
-cudaTask cublasFlowCapturer::symm(
+hipTask cublasFlowCapturer::symm(
   cublasSideMode_t side, cublasFillMode_t uplo,
   int m, int n,
   const T *alpha,
@@ -212,7 +212,7 @@ cudaTask cublasFlowCapturer::symm(
 ) {
   return factory()->on(
   [this, side, uplo, m, n, alpha, A, lda, B, ldb, beta, C, ldc]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
     _stream(stream);
     cublasStatus_t stat;
     if constexpr(std::is_same_v<T, float>) {
@@ -232,7 +232,7 @@ cudaTask cublasFlowCapturer::symm(
 
 // c_symm
 template <typename T>
-cudaTask cublasFlowCapturer::c_symm(
+hipTask cublasFlowCapturer::c_symm(
   cublasSideMode_t side, cublasFillMode_t uplo,
   int m, int n,
   const T *alpha,
@@ -249,7 +249,7 @@ cudaTask cublasFlowCapturer::c_symm(
 
 // syrk
 template <typename T>
-cudaTask cublasFlowCapturer::syrk(
+hipTask cublasFlowCapturer::syrk(
   cublasFillMode_t uplo, cublasOperation_t tran,
   int n, int k,
   const T *alpha,
@@ -259,7 +259,7 @@ cudaTask cublasFlowCapturer::syrk(
 ) {
   return factory()->on(
   [this, uplo, tran, n, k, alpha, A, lda, beta, C, ldc]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
     _stream(stream);
     cublasStatus_t stat;
     if constexpr(std::is_same_v<T, float>) {
@@ -279,7 +279,7 @@ cudaTask cublasFlowCapturer::syrk(
 
 // c_syrk
 template <typename T>
-cudaTask cublasFlowCapturer::c_syrk(
+hipTask cublasFlowCapturer::c_syrk(
   cublasFillMode_t uplo, cublasOperation_t tran,
   int n, int k,
   const T *alpha,
@@ -295,7 +295,7 @@ cudaTask cublasFlowCapturer::c_syrk(
 
 // syr2k
 template <typename T>
-cudaTask cublasFlowCapturer::syr2k(
+hipTask cublasFlowCapturer::syr2k(
   cublasFillMode_t uplo, cublasOperation_t tran,
   int n, int k,
   const T *alpha,
@@ -306,7 +306,7 @@ cudaTask cublasFlowCapturer::syr2k(
 ) {
   return factory()->on(
   [this, uplo, tran, n, k, alpha, A, lda, B, ldb, beta, C, ldc]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
     _stream(stream);
     cublasStatus_t stat;
     if constexpr(std::is_same_v<T, float>) {
@@ -326,7 +326,7 @@ cudaTask cublasFlowCapturer::syr2k(
 
 // c_syr2k
 template <typename T>
-cudaTask cublasFlowCapturer::c_syr2k(
+hipTask cublasFlowCapturer::c_syr2k(
   cublasFillMode_t uplo, cublasOperation_t tran,
   int n, int k,
   const T *alpha,
@@ -343,7 +343,7 @@ cudaTask cublasFlowCapturer::c_syr2k(
 
 // syrkx
 template <typename T>
-cudaTask cublasFlowCapturer::syrkx(
+hipTask cublasFlowCapturer::syrkx(
   cublasFillMode_t uplo, cublasOperation_t tran,
   int n, int k,
   const T *alpha,
@@ -354,7 +354,7 @@ cudaTask cublasFlowCapturer::syrkx(
 ) {
   return factory()->on(
   [this, uplo, tran, n, k, alpha, A, lda, B, ldb, beta, C, ldc]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
     _stream(stream);
     cublasStatus_t stat;
     if constexpr(std::is_same_v<T, float>) {
@@ -374,7 +374,7 @@ cudaTask cublasFlowCapturer::syrkx(
 
 // c_syrkx
 template <typename T>
-cudaTask cublasFlowCapturer::c_syrkx(
+hipTask cublasFlowCapturer::c_syrkx(
   cublasFillMode_t uplo, cublasOperation_t tran,
   int n, int k,
   const T *alpha,
@@ -391,7 +391,7 @@ cudaTask cublasFlowCapturer::c_syrkx(
 
 // trmm
 template <typename T>
-cudaTask cublasFlowCapturer::trmm(
+hipTask cublasFlowCapturer::trmm(
   cublasSideMode_t side, cublasFillMode_t uplo,
   cublasOperation_t tran, cublasDiagType_t diag,
   int m, int n,
@@ -403,7 +403,7 @@ cudaTask cublasFlowCapturer::trmm(
 
   return factory()->on(
   [this, side, uplo, tran, diag, m, n, alpha, A, lda, B, ldb, C, ldc]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
     _stream(stream);
     cublasStatus_t stat;
     if constexpr(std::is_same_v<T, float>) {
@@ -423,7 +423,7 @@ cudaTask cublasFlowCapturer::trmm(
 
 // c_trmm
 template <typename T>
-cudaTask cublasFlowCapturer::c_trmm(
+hipTask cublasFlowCapturer::c_trmm(
   cublasSideMode_t side, cublasFillMode_t uplo,
   cublasOperation_t tran, cublasDiagType_t diag,
   int m, int n,
@@ -440,7 +440,7 @@ cudaTask cublasFlowCapturer::c_trmm(
 
 // trsm
 template <typename T>
-cudaTask cublasFlowCapturer::trsm(
+hipTask cublasFlowCapturer::trsm(
   cublasSideMode_t side, cublasFillMode_t uplo,
   cublasOperation_t tran, cublasDiagType_t diag,
   int m, int n,
@@ -451,7 +451,7 @@ cudaTask cublasFlowCapturer::trsm(
 
   return factory()->on(
   [this, side, uplo, tran, diag, m, n, alpha, A, lda, B, ldb]
-  (cudaStream_t stream) mutable {
+  (hipStream_t stream) mutable {
     _stream(stream);
     cublasStatus_t stat;
     if constexpr(std::is_same_v<T, float>) {
@@ -471,7 +471,7 @@ cudaTask cublasFlowCapturer::trsm(
 
 // c_trsm
 template <typename T>
-cudaTask cublasFlowCapturer::c_trsm(
+hipTask cublasFlowCapturer::c_trsm(
   cublasSideMode_t side, cublasFillMode_t uplo,
   cublasOperation_t tran, cublasDiagType_t diag,
   int m, int n,

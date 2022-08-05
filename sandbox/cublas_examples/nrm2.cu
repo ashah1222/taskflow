@@ -1,5 +1,5 @@
 #include <taskflow/taskflow.hpp>
-#include <taskflow/cudaflow.hpp>
+#include <taskflow/hipflow.hpp>
 #include <taskflow/cublasflow.hpp>
 
 int main() {
@@ -11,16 +11,16 @@ int main() {
 
   std::vector<float> hvec(N, 1);
   float  hres;
-  float* gvec = tf::cuda_malloc_device<float>(N);
-  float* gres = tf::cuda_malloc_device<float>(1);
+  float* gvec = tf::hip_malloc_device<float>(N);
+  float* gres = tf::hip_malloc_device<float>(1);
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
     
     auto blas = capturer.make_capturer<tf::cublasFlowCapturer>();
 
-    tf::cudaTask h2d = capturer.copy(gvec, hvec.data(), N).name("h2d");
-    tf::cudaTask nrm = blas->nrm2(N, gvec, 1, gres).name("2-norm");
-    tf::cudaTask d2h = capturer.copy(&hres, gres, 1).name("d2h");
+    tf::hipTask h2d = capturer.copy(gvec, hvec.data(), N).name("h2d");
+    tf::hipTask nrm = blas->nrm2(N, gvec, 1, gres).name("2-norm");
+    tf::hipTask d2h = capturer.copy(&hres, gres, 1).name("d2h");
 
     nrm.precede(d2h)
        .succeed(h2d);

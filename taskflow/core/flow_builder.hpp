@@ -277,52 +277,52 @@ class FlowBuilder {
     Task placeholder();
 
     /**
-    @brief creates a %cudaFlow task on the caller's GPU device context
+    @brief creates a %hipFlow task on the caller's GPU device context
 
-    @tparam C callable type constructible from @c std::function<void(tf::cudaFlow&)>
+    @tparam C callable type constructible from @c std::function<void(tf::hipFlow&)>
 
     @return a tf::Task handle
 
     This method is equivalent to calling tf::FlowBuilder::emplace_on(callable, d)
     where @c d is the caller's device context.
-    The following example creates a %cudaFlow of two kernel tasks, @c task1 and
+    The following example creates a %hipFlow of two kernel tasks, @c task1 and
     @c task2, where @c task1 runs before @c task2.
 
     @code{.cpp}
-    taskflow.emplace([&](tf::cudaFlow& cf){
+    taskflow.emplace([&](tf::hipFlow& cf){
       // create two kernel tasks
-      tf::cudaTask task1 = cf.kernel(grid1, block1, shm1, kernel1, args1);
-      tf::cudaTask task2 = cf.kernel(grid2, block2, shm2, kernel2, args2);
+      tf::hipTask task1 = cf.kernel(grid1, block1, shm1, kernel1, args1);
+      tf::hipTask task2 = cf.kernel(grid2, block2, shm2, kernel2, args2);
 
       // kernel1 runs before kernel2
       task1.precede(task2);
     });
     @endcode
 
-    Please refer to @ref GPUTaskingcudaFlow and @ref GPUTaskingcudaFlowCapturer
+    Please refer to @ref GPUTaskinghipFlow and @ref GPUTaskinghipFlowCapturer
     for details.
     */
     template <typename C,
-      std::enable_if_t<is_cudaflow_task_v<C>, void>* = nullptr
+      std::enable_if_t<is_hipflow_task_v<C>, void>* = nullptr
     >
     Task emplace(C&& callable);
 
     /**
-    @brief creates a %cudaFlow task on the given device
+    @brief creates a %hipFlow task on the given device
 
-    @tparam C callable type constructible from std::function<void(tf::cudaFlow&)>
+    @tparam C callable type constructible from std::function<void(tf::hipFlow&)>
     @tparam D device type, either @c int or @c std::ref<int> (stateful)
 
     @return a tf::Task handle
 
-    The following example creates a %cudaFlow of two kernel tasks, @c task1 and
+    The following example creates a %hipFlow of two kernel tasks, @c task1 and
     @c task2 on GPU @c 2, where @c task1 runs before @c task2
 
     @code{.cpp}
-    taskflow.emplace_on([&](tf::cudaFlow& cf){
+    taskflow.emplace_on([&](tf::hipFlow& cf){
       // create two kernel tasks
-      tf::cudaTask task1 = cf.kernel(grid1, block1, shm1, kernel1, args1);
-      tf::cudaTask task2 = cf.kernel(grid2, block2, shm2, kernel2, args2);
+      tf::hipTask task1 = cf.kernel(grid1, block1, shm1, kernel1, args1);
+      tf::hipTask task2 = cf.kernel(grid2, block2, shm2, kernel2, args2);
 
       // kernel1 runs before kernel2
       task1.precede(task2);
@@ -330,7 +330,7 @@ class FlowBuilder {
     @endcode
     */
     template <typename C, typename D,
-      std::enable_if_t<is_cudaflow_task_v<C>, void>* = nullptr
+      std::enable_if_t<is_hipflow_task_v<C>, void>* = nullptr
     >
     Task emplace_on(C&& callable, D&& device);
 

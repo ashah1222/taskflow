@@ -1,5 +1,5 @@
 #include <taskflow/taskflow.hpp>
-#include <taskflow/cuda/cudaflow.hpp>
+#include <taskflow/hip/hipflow.hpp>
 #include <fstream>
 
 struct pair_hash {
@@ -29,7 +29,7 @@ struct Graph {
   std::vector<Node> nodes;
 
   Graph(const std::string& path) :
-    num_gpus  {static_cast<int>(tf::cuda_get_num_devices())} {
+    num_gpus  {static_cast<int>(tf::hip_get_num_devices())} {
 
     std::ifstream ifs(path);
 
@@ -50,10 +50,10 @@ struct Graph {
     }
   }
 
-  Graph(int V, int E, int cuda_ratio) :
+  Graph(int V, int E, int hip_ratio) :
     num_nodes {V},
     num_edges {E},
-    num_gpus  {static_cast<int>(tf::cuda_get_num_devices())} {
+    num_gpus  {static_cast<int>(tf::hip_get_num_devices())} {
 
     std::unordered_set<std::pair<int, int>, pair_hash> set;
 
@@ -62,7 +62,7 @@ struct Graph {
     for(int j=0; j<num_nodes; j++) {
       Node v;
       v.v = j;
-      v.g = rand()%cuda_ratio == 0 ? rand()%num_gpus : -1;
+      v.g = rand()%hip_ratio == 0 ? rand()%num_gpus : -1;
       nodes.push_back(v);
     }
 

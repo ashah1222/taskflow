@@ -38,7 +38,7 @@ struct cublasHandleDeleter {
 /**
 @private alias of per-thread cublas handle pool type
  */
-using cublasPerThreadHandlePool = cudaPerThreadDeviceObjectPool<
+using cublasPerThreadHandlePool = hipPerThreadDeviceObjectPool<
   cublasHandle_t, cublasHandleCreator, cublasHandleDeleter
 >;
 
@@ -95,7 +95,7 @@ class cublasScopedPerThreadHandle {
   The constructor acquires a handle from a per-thread handle pool.
   */
   cublasScopedPerThreadHandle() :
-    _ptr {cublas_per_thread_handle_pool().acquire(cuda_get_device())} {
+    _ptr {cublas_per_thread_handle_pool().acquire(hip_get_device())} {
   }
 
   /**

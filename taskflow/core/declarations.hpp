@@ -32,18 +32,18 @@ template <typename...Fs>
 class Pipeline;
 
 // ----------------------------------------------------------------------------
-// cudaFlow
+// hipFlow
 // ----------------------------------------------------------------------------
-class cudaNode;
-class cudaGraph;
-class cudaTask;
-class cudaFlow;
-class cudaFlowCapturer;
-class cudaFlowCapturerBase;
-class cudaCapturingBase;
-class cudaLinearCapturing;
-class cudaSequentialCapturing;
-class cudaRoundRobinCapturing;
+class hipNode;
+class hipGraph;
+class hipTask;
+class hipFlow;
+class hipFlowCapturer;
+class hipFlowCapturerBase;
+class hipCapturingBase;
+class hipLinearCapturing;
+class hipSequentialCapturing;
+class hipRoundRobinCapturing;
 
 // ----------------------------------------------------------------------------
 // syclFlow

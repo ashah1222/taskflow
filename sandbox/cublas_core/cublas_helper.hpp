@@ -44,10 +44,10 @@ constexpr cublasSideMode_t cublas_rside(cublasSideMode_t side) {
 template <typename T,
   std::enable_if_t<!std::is_same_v<T, void>, void>*
 >
-cudaTask cublasFlowCapturer::vset(
+hipTask cublasFlowCapturer::vset(
   size_t n, const T* h, int inch, T* d, int incd
 ) {
-  return factory()->on([n, h, inch, d, incd] (cudaStream_t stream) mutable {
+  return factory()->on([n, h, inch, d, incd] (hipStream_t stream) mutable {
     TF_CHECK_CUBLAS(
       cublasSetVectorAsync(n, sizeof(T), h, inch, d, incd, stream),
       "failed to run vset_async"
@@ -59,8 +59,8 @@ cudaTask cublasFlowCapturer::vset(
 template <typename T,
   std::enable_if_t<!std::is_same_v<T, void>, void>*
 >
-cudaTask cublasFlowCapturer::vget(size_t n, const T* d, int incd, T* h, int inch) {
-  return factory()->on([n, d, incd, h, inch] (cudaStream_t stream) mutable {
+hipTask cublasFlowCapturer::vget(size_t n, const T* d, int incd, T* h, int inch) {
+  return factory()->on([n, d, incd, h, inch] (hipStream_t stream) mutable {
     TF_CHECK_CUBLAS(
       cublasGetVectorAsync(n, sizeof(T), d, incd, h, inch, stream),
       "failed to run vget_async"

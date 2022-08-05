@@ -19,13 +19,13 @@ void gemv(
   bool trans
 ) {
 
-  for(size_t d=0; d<tf::cuda_get_num_devices(); d++) {
+  for(size_t d=0; d<tf::hip_get_num_devices(); d++) {
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-    auto dA = tf::cuda_malloc_device<T>(M*N, d);
-    auto dAlpha = tf::cuda_malloc_device<T>(1, d);
-    auto dBeta  = tf::cuda_malloc_device<T>(1, d);
+    auto dA = tf::hip_malloc_device<T>(M*N, d);
+    auto dAlpha = tf::hip_malloc_device<T>(1, d);
+    auto dBeta  = tf::hip_malloc_device<T>(1, d);
 
     T* hy;
     T* dx;
@@ -33,22 +33,22 @@ void gemv(
 
     if(trans) {
       hy = new T[N];
-      dx = tf::cuda_malloc_device<T>(M, d);
-      dy = tf::cuda_malloc_device<T>(N, d);
+      dx = tf::hip_malloc_device<T>(M, d);
+      dy = tf::hip_malloc_device<T>(N, d);
     }
     else {
       hy = new T[M];
-      dx = tf::cuda_malloc_device<T>(N, d);
-      dy = tf::cuda_malloc_device<T>(M, d);
+      dx = tf::hip_malloc_device<T>(N, d);
+      dy = tf::hip_malloc_device<T>(M, d);
     }
 
-    auto cudaflow = taskflow.emplace_on([=](tf::cudaFlow& cf){
+    auto hipflow = taskflow.emplace_on([=](tf::hipFlow& cf){
 
-      REQUIRE(tf::cuda_get_device() == d);
+      REQUIRE(tf::hip_get_device() == d);
       
       auto copyA = cf.copy(dA, hA.data(), M*N);
 
-      tf::cudaTask copyx;
+      tf::hipTask copyx;
 
       (trans) ? copyx = cf.copy(dx, hx.data(), M)
               : copyx = cf.copy(dx, hx.data(), N);
@@ -56,11 +56,11 @@ void gemv(
       auto alpha = cf.single_task([=] __device__ () { *dAlpha = 1; });
       auto beta  = cf.single_task([=] __device__ () { *dBeta  = 0; });
 
-      tf::cudaTask gemv; 
+      tf::hipTask gemv; 
       
       if(trans) {        
         if(row_major) {       // C = A^T * x (r-major)
-          gemv = cf.capture([&](tf::cudaFlowCapturer& cap){
+          gemv = cf.capture([&](tf::hipFlowCapturer& cap){
             cap.make_capturer<tf::cublasFlowCapturer>()->c_gemv(
               CUBLAS_OP_T,
               M, N, dAlpha, dA, N, dx, 1, dBeta, dy, 1 
@@ -68,7 +68,7 @@ void gemv(
           });
         }
         else {
-          gemv = cf.capture([&](tf::cudaFlowCapturer& cap){
+          gemv = cf.capture([&](tf::hipFlowCapturer& cap){
             cap.make_capturer<tf::cublasFlowCapturer>()->gemv(
               CUBLAS_OP_N,
               N, M, dAlpha, dA, N, dx, 1, dBeta, dy, 1
@@ -78,7 +78,7 @@ void gemv(
       }
       else {            
         if(row_major) {       // C = A * x (r-major)
-          gemv = cf.capture([&](tf::cudaFlowCapturer& cap){
+          gemv = cf.capture([&](tf::hipFlowCapturer& cap){
             cap.make_capturer<tf::cublasFlowCapturer>()->c_gemv(
               CUBLAS_OP_N,
               M, N, dAlpha, dA, N, dx, 1, dBeta, dy, 1
@@ -86,7 +86,7 @@ void gemv(
           });
         }
         else {
-          gemv = cf.capture([&](tf::cudaFlowCapturer& cap){
+          gemv = cf.capture([&](tf::hipFlowCapturer& cap){
             cap.make_capturer<tf::cublasFlowCapturer>()->gemv(
               CUBLAS_OP_T,
               N, M, dAlpha, dA, N, dx, 1, dBeta, dy, 1
@@ -95,7 +95,7 @@ void gemv(
         }
       }
       
-      tf::cudaTask copyy; 
+      tf::hipTask copyy; 
       (trans) ? copyy = cf.copy(hy, dy, N)
               : copyy = cf.copy(hy, dy, M);
 
@@ -109,15 +109,15 @@ void gemv(
         REQUIRE(std::fabs(hy[i]-golden[i]) < 0.0001);
       }
       //std::cerr << '\n';
-      tf::cuda_free(dA);
-      tf::cuda_free(dx);
-      tf::cuda_free(dy);
-      tf::cuda_free(dAlpha);
-      tf::cuda_free(dBeta);
+      tf::hip_free(dA);
+      tf::hip_free(dx);
+      tf::hip_free(dy);
+      tf::hip_free(dAlpha);
+      tf::hip_free(dBeta);
       delete [] hy;
     });
     
-    cudaflow.precede(verify);
+    hipflow.precede(verify);
 
   executor.run(taskflow).wait();
   }
@@ -219,10 +219,10 @@ void c_trsv_test() {
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  auto dA = tf::cuda_malloc_device<T>(hA.size());
-  auto dB = tf::cuda_malloc_device<T>(hB.size());
+  auto dA = tf::hip_malloc_device<T>(hA.size());
+  auto dB = tf::hip_malloc_device<T>(hB.size());
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
     auto blas = capturer.make_capturer<tf::cublasFlowCapturer>();
     auto h2dA = capturer.copy(dA, hA.data(), hA.size());
     auto h2dB = capturer.copy(dB, hB.data(), hB.size());
@@ -293,10 +293,10 @@ void c_trmv_test() {
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  auto dA = tf::cuda_malloc_device<T>(hA.size());
-  auto dB = tf::cuda_malloc_device<T>(hB.size());
+  auto dA = tf::hip_malloc_device<T>(hA.size());
+  auto dB = tf::hip_malloc_device<T>(hB.size());
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
     auto blas = capturer.make_capturer<tf::cublasFlowCapturer>();
     auto h2dA = capturer.copy(dA, hA.data(), hA.size());
     auto h2dB = capturer.copy(dB, hB.data(), hB.size());
@@ -373,13 +373,13 @@ void c_symv_test() {
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  auto dA = tf::cuda_malloc_device<T>(hA.size());
-  auto dx = tf::cuda_malloc_device<T>(hx.size());
-  auto dy = tf::cuda_malloc_device<T>(hy.size());
-  auto dalpha = tf::cuda_malloc_device<T>(1);
-  auto dbeta  = tf::cuda_malloc_device<T>(1);
+  auto dA = tf::hip_malloc_device<T>(hA.size());
+  auto dx = tf::hip_malloc_device<T>(hx.size());
+  auto dy = tf::hip_malloc_device<T>(hy.size());
+  auto dalpha = tf::hip_malloc_device<T>(1);
+  auto dbeta  = tf::hip_malloc_device<T>(1);
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
     auto blas = capturer.make_capturer<tf::cublasFlowCapturer>();
     auto alpha = capturer.single_task([=] __device__ () { *dalpha = 1; });
     auto beta  = capturer.single_task([=] __device__ () { *dbeta  = 1; });
@@ -447,11 +447,11 @@ void c_syr_test() {
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  auto dA = tf::cuda_malloc_device<T>(hA.size());
-  auto dx = tf::cuda_malloc_device<T>(hx.size());
-  auto dalpha = tf::cuda_malloc_device<T>(1);
+  auto dA = tf::hip_malloc_device<T>(hA.size());
+  auto dx = tf::hip_malloc_device<T>(hx.size());
+  auto dalpha = tf::hip_malloc_device<T>(1);
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
     auto blas = capturer.make_capturer<tf::cublasFlowCapturer>();
     auto alpha = capturer.single_task([=] __device__ () { *dalpha = 1; });
     auto h2dA  = capturer.copy(dA, hA.data(), hA.size());
@@ -528,12 +528,12 @@ void c_syr2_test() {
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  auto dA = tf::cuda_malloc_device<T>(hA.size());
-  auto dx = tf::cuda_malloc_device<T>(hx.size());
-  auto dy = tf::cuda_malloc_device<T>(hy.size());
-  auto dalpha = tf::cuda_malloc_device<T>(1);
+  auto dA = tf::hip_malloc_device<T>(hA.size());
+  auto dx = tf::hip_malloc_device<T>(hx.size());
+  auto dy = tf::hip_malloc_device<T>(hy.size());
+  auto dalpha = tf::hip_malloc_device<T>(1);
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
     auto blas = capturer.make_capturer<tf::cublasFlowCapturer>();
     auto alpha = capturer.single_task([=] __device__ () { *dalpha = 1; });
     auto h2dA  = capturer.copy(dA, hA.data(), hA.size());

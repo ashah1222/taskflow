@@ -34,7 +34,7 @@ tbb_build(TBB_ROOT ${TBB_ROOT_DIR} CONFIG_DIR TBB_DIR)
 unset(TBB_ROOT)  # unset is needed to pop CMP0074 without warning
 cmake_policy(POP)
 #find_package(TBB REQUIRED tbb_preview)
-find_package(TBB REQUIRED)
+# find_package(TBB REQUIRED)
 #cmake_policy(POP)
 
 # -----------------------------------------------------------------------------
@@ -280,12 +280,12 @@ target_link_libraries(
 set_target_properties(thread_pool PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
 
 ###############################################################################
-# CUDA benchmarks
+# hip benchmarks
 ###############################################################################
 
-if(TF_BUILD_CUDA)
+if(TF_BUILD_HIP)
 
-  ## cuda benchmark 1: heterogeneous traversal
+  ## hip benchmark 1: heterogeneous traversal
   add_executable(
     hetero_traversal 
     ${TF_BENCHMARK_DIR}/hetero_traversal/main.cu
@@ -313,10 +313,10 @@ if(TF_BUILD_CUDA)
   
   # avoid cmake 3.18+ warning
   # we let nvcc to decide the flag if the architecture is not given
-  if(NOT CUDA_ARCHITECTURES)
-    set_property(TARGET hetero_traversal PROPERTY CUDA_ARCHITECTURES OFF)
+  if(NOT hip_ARCHITECTURES)
+    set_property(TARGET hetero_traversal PROPERTY hip_ARCHITECTURES OFF)
   endif()
 
 
-endif(TF_BUILD_CUDA)
+endif(TF_BUILD_HIP)
 

@@ -8,20 +8,19 @@
 # -DCMAKE_CXX_FLAGS="-fsanitize=address  -fsanitize=leak -g"
 # -------------------------------------------------------------------
 
-
 # CMake version
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.13)
 MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
 
 # Project name
 project(Taskflow VERSION 3.5.0 LANGUAGES CXX)
 
 # build options
-option(TF_BUILD_BENCHMARKS "Enables builds of benchmarks" OFF)
-option(TF_BUILD_CUDA "Enables builds of cuda code" OFF)
-option(TF_BUILD_SYCL "Enables builds of sycl code" OFF)
-option(TF_BUILD_TESTS "Enables builds of tests" ON)
-option(TF_BUILD_EXAMPLES "Enables builds of examples" ON)
+option(TF_BUILD_BENCHMARKS "Enables builds of benchmarks" ON)
+option(TF_BUILD_HIP "Enables builds of HIP code" ON)
+option(TF_BUILD_SYCL "Enables builds of sycl code" ON)
+option(TF_BUILD_TESTS "Enables builds of tests" OFF)
+option(TF_BUILD_EXAMPLES "Enables builds of examples" OFF)
 
 # project-specific variables
 set(TF_UTEST_DIR ${PROJECT_SOURCE_DIR}/unittests)
@@ -83,23 +82,24 @@ endif()
 
 # -----------------------------------------------------------------------------
 # find nvcc
-# https://cliutils.gitlab.io/modern-cmake/chapters/packages/CUDA.html
+# https://cliutils.gitlab.io/modern-cmake/chapters/packages/HIP.html
 # -----------------------------------------------------------------------------
-if(TF_BUILD_CUDA)
-  message(STATUS "Configuring CUDA ...")
-  check_language(CUDA)
-  if(NOT CMAKE_CUDA_COMPILER)
-    message(FATAL_ERROR "\nNo CUDA compiler found")
-  endif()
-  enable_language(CUDA)
-  if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS "11")
-    message(STATUS "CMAKE_CUDA_COMPILER_VERSION: ${CMAKE_CUDA_COMPILER_VERSION}")
-    message(FATAL_ERROR "\nTaskflow requires CUDA at least v11")
-  endif()
+if(TF_BUILD_HIP)
+#  enable_language(HIP)
+#  message(STATUS "Configuring HIP ...")
+#  check_language(HIP)
+#  if(NOT CMAKE_HIP_COMPILER)
+#    message(FATAL_ERROR "\nNo HIP compiler found")
+#  endif()
+  # enable_language(HIP)
+  # if(CMAKE_HIP_COMPILER_VERSION VERSION_LESS "11")
+   # message(STATUS "CMAKE_HIP_COMPILER_VERSION: ${CMAKE_HIP_COMPILER_VERSION}")
+  #  message(FATAL_ERROR "\nTaskflow requires HIP at least v11")
+  #endif()
   
   ## configure cuBLAS
-  #message(STATUS "Configuring CUDA BLAS ...")
-  #list(APPEND CMAKE_MODULE_PATH ${TF_CMAKE_DIR}/cuda/modules/)
+  #message(STATUS "Configuring HIP BLAS ...")
+  #list(APPEND CMAKE_MODULE_PATH ${TF_CMAKE_DIR}/HIP/modules/)
   #find_package(cuBLAS)
   #message(STATUS "CUBLAS_FOUND: ${CUBLAS_FOUND}")
   #message(STATUS "CUBLAS_INCLUDE_DIRS: ${CUBLAS_INCLUDE_DIRS}")
@@ -169,25 +169,25 @@ target_compile_options(
   $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/W3 /permissive->
 )
 
-# cuda compiler options
-if(TF_BUILD_CUDA)
-  message(STATUS "Configuring CUDA compiler options ...")
+# HIP compiler options
+if(TF_BUILD_HIP)
+  message(STATUS "Configuring HIP compiler options ...")
   target_compile_options(
     error_settings
     BEFORE
     INTERFACE
-    $<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda -Xcompiler=-Wall,-Wextra,-Wfatal-errors>
+    $<$<COMPILE_LANGUAGE:HIP>:--extended-lambda -Xcompiler=-Wall,-Wextra,-Wfatal-errors>
   )
-endif(TF_BUILD_CUDA)
+endif(TF_BUILD_HIP)
 
 # sycl compiler options (currently support only DPC++)
 if(TF_BUILD_SYCL)
   message(STATUS "Configuring SYCL compiler options ...")
-  message(STATUS "You may specify -DTF_BUILD_SYCL_BITCODE=ptx64 for CUDA devices")
+  message(STATUS "You may specify -DTF_BUILD_SYCL_BITCODE=ptx64 for HIP devices")
   list(APPEND TF_SYCL_OPTIONS -fsycl -fsycl-unnamed-lambda)
   if(TF_BUILD_SYCL_BITCODE STREQUAL "ptx64")
-    message(STATUS "Configuring SYCL compiler options to CUDA ptx64 ...")
-    list(APPEND TF_SYCL_OPTIONS -fsycl-targets=nvptx64-nvidia-cuda)
+    message(STATUS "Configuring SYCL compiler options to HIP ptx64 ...")
+    list(APPEND TF_SYCL_OPTIONS -fsycl-targets=nvptx64-nvidia-HIP)
   endif()
 endif()
 
@@ -247,10 +247,10 @@ message(STATUS "CMAKE_CXX_COMPILER: " ${CMAKE_CXX_COMPILER})
 message(STATUS "CMAKE_CXX_COMPILER_ID: " ${CMAKE_CXX_COMPILER_ID})
 message(STATUS "CMAKE_CXX_COMPILER_VERSION: " ${CMAKE_CXX_COMPILER_VERSION})
 message(STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
-message(STATUS "CMAKE_CUDA_COMPILER: " ${CMAKE_CUDA_COMPILER})
-message(STATUS "CMAKE_CUDA_COMPILER_ID: " ${CMAKE_CUDA_COMPILER_ID})
-message(STATUS "CMAKE_CUDA_COMPILER_VERSION: " ${CMAKE_CUDA_COMPILER_VERSION})
-message(STATUS "CMAKE_CUDA_FLAGS: " ${CMAKE_CUDA_FLAGS})
+message(STATUS "CMAKE_HIP_COMPILER: " ${CMAKE_HIP_COMPILER})
+message(STATUS "CMAKE_HIP_COMPILER_ID: " ${CMAKE_HIP_COMPILER_ID})
+message(STATUS "CMAKE_HIP_COMPILER_VERSION: " ${CMAKE_HIP_COMPILER_VERSION})
+message(STATUS "CMAKE_HIP_FLAGS: " ${CMAKE_HIP_FLAGS})
 message(STATUS "CMAKE_MODULE_PATH: " ${CMAKE_MODULE_PATH})
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR: " ${CMAKE_CURRENT_SOURCE_DIR})
 message(STATUS "CMAKE_CURRENT_BINARY_DIR: " ${CMAKE_CURRENT_BINARY_DIR})
@@ -262,7 +262,7 @@ message(STATUS "CMAKE_INSTALL_FULL_LIBDIR: " ${CMAKE_INSTALL_FULL_LIBDIR})
 message(STATUS "CMAKE_MODULE_PATH: " ${CMAKE_MODULE_PATH})
 message(STATUS "CMAKE_PREFIX_PATH: " ${CMAKE_PREFIX_PATH})
 message(STATUS "TF_BUILD_BENCHMARKS: " ${TF_BUILD_BENCHMARKS})
-message(STATUS "TF_BUILD_CUDA: " ${TF_BUILD_CUDA})
+message(STATUS "TF_BUILD_HIP: " ${TF_BUILD_HIP})
 message(STATUS "TF_BUILD_SYCL: " ${TF_BUILD_SYCL})
 message(STATUS "TF_BUILD_SYCL_BITCODE: " ${TF_BUILD_SYCL_BITCODE})
 message(STATUS "TF_BUILD_TESTS: " ${TF_BUILD_TESTS})

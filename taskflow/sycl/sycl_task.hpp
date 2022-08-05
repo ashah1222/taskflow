@@ -16,7 +16,7 @@ namespace tf {
 /**
 @class syclTask
 
-@brief handle to a node of the internal CUDA graph
+@brief handle to a node of the internal hip graph
 */
 class syclTask {
 

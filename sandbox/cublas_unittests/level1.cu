@@ -24,17 +24,17 @@ void amax_amin_asum() {
     sum += std::abs(host[i]);
   }
 
-  auto gpu = tf::cuda_malloc_device<T>(N);
-  auto min_i = tf::cuda_malloc_device<int>(1);
-  auto max_i = tf::cuda_malloc_device<int>(1);
-  auto gsum = tf::cuda_malloc_device<T>(1);
+  auto gpu = tf::hip_malloc_device<T>(N);
+  auto min_i = tf::hip_malloc_device<int>(1);
+  auto max_i = tf::hip_malloc_device<int>(1);
+  auto gsum = tf::hip_malloc_device<T>(1);
   int h_min_i = -1, h_max_i = -1;
 
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  taskflow.emplace([&](tf::cudaFlow& cf){
-    auto cublas = cf.capture([&](tf::cudaFlowCapturer& cap){
+  taskflow.emplace([&](tf::hipFlow& cf){
+    auto cublas = cf.capture([&](tf::hipFlowCapturer& cap){
       auto capturer = cap.make_capturer<tf::cublasFlowCapturer>();
       auto amax = capturer->amax(N, gpu, 1, max_i);
       auto amin = capturer->amin(N, gpu, 1, min_i);
@@ -65,7 +65,7 @@ void amax_amin_asum() {
 
   // pure capturer
   
-  taskflow.emplace([&](tf::cudaFlowCapturer& cap){
+  taskflow.emplace([&](tf::hipFlowCapturer& cap){
     auto capturer = cap.make_capturer<tf::cublasFlowCapturer>();
     auto amax = capturer->amax(N, gpu, 1, max_i);
     auto amin = capturer->amin(N, gpu, 1, min_i);
@@ -89,9 +89,9 @@ void amax_amin_asum() {
   REQUIRE(std::abs(host[h_max_i]) == max_v);
   REQUIRE(std::abs(sum-h_sum) < 0.0001);
 
-  tf::cuda_free(gpu);
-  tf::cuda_free(min_i);
-  tf::cuda_free(max_i);
+  tf::hip_free(gpu);
+  tf::hip_free(min_i);
+  tf::hip_free(max_i);
 }
 
 TEST_CASE("amax-amin-asum.float" * doctest::timeout(300)) {
@@ -120,15 +120,15 @@ void axpy() {
     res[i] = rand();
   }
 
-  auto dx = tf::cuda_malloc_device<T>(N);
-  auto dy = tf::cuda_malloc_device<T>(N);
-  auto alpha = tf::cuda_malloc_device<T>(1);
+  auto dx = tf::hip_malloc_device<T>(N);
+  auto dy = tf::hip_malloc_device<T>(N);
+  auto alpha = tf::hip_malloc_device<T>(1);
 
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  taskflow.emplace([&](tf::cudaFlow& cf){
-    cf.capture([&](tf::cudaFlowCapturer& cap){
+  taskflow.emplace([&](tf::hipFlow& cf){
+    cf.capture([&](tf::hipFlowCapturer& cap){
       auto capturer = cap.make_capturer<tf::cublasFlowCapturer>();
       auto vsetx = capturer->vset(N, hx.data(), 1, dx, 1);
       auto vsety = capturer->vset(N, hy.data(), 1, dy, 1);
@@ -148,9 +148,9 @@ void axpy() {
     REQUIRE(std::abs(res[i] - golden[i]) < 0.0001);
   }
   
-  tf::cuda_free(dx);
-  tf::cuda_free(dy);
-  tf::cuda_free(alpha);
+  tf::hip_free(dx);
+  tf::hip_free(dy);
+  tf::hip_free(alpha);
 }
 
 TEST_CASE("axpy.float" * doctest::timeout(300)) {
@@ -179,15 +179,15 @@ void dot() {
     golden += hx[i] * hy[i];
   }
 
-  auto dx = tf::cuda_malloc_device<T>(N);
-  auto dy = tf::cuda_malloc_device<T>(N);
-  auto dr = tf::cuda_malloc_device<T>(1);
+  auto dx = tf::hip_malloc_device<T>(N);
+  auto dy = tf::hip_malloc_device<T>(N);
+  auto dr = tf::hip_malloc_device<T>(1);
 
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  taskflow.emplace([&](tf::cudaFlow& cf){
-    cf.capture([&](tf::cudaFlowCapturer& cap){
+  taskflow.emplace([&](tf::hipFlow& cf){
+    cf.capture([&](tf::hipFlowCapturer& cap){
       auto capturer = cap.make_capturer<tf::cublasFlowCapturer>();
       auto vsetx = capturer->vset(N, hx.data(), 1, dx, 1);
       auto vsety = capturer->vset(N, hy.data(), 1, dy, 1);
@@ -202,9 +202,9 @@ void dot() {
   
   REQUIRE(std::abs(res-golden) < 0.0001);
   
-  tf::cuda_free(dx);
-  tf::cuda_free(dy);
-  tf::cuda_free(dr);
+  tf::hip_free(dx);
+  tf::hip_free(dy);
+  tf::hip_free(dr);
 }
 
 TEST_CASE("dot.float" * doctest::timeout(300)) {
@@ -231,14 +231,14 @@ void swap() {
     hy[i] = rand() % 100 - 50;
   }
 
-  auto dx = tf::cuda_malloc_device<T>(N);
-  auto dy = tf::cuda_malloc_device<T>(N);
+  auto dx = tf::hip_malloc_device<T>(N);
+  auto dy = tf::hip_malloc_device<T>(N);
 
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  taskflow.emplace([&](tf::cudaFlow& cf){
-    cf.capture([&](tf::cudaFlowCapturer& cap){
+  taskflow.emplace([&](tf::hipFlow& cf){
+    cf.capture([&](tf::hipFlowCapturer& cap){
       auto capturer = cap.make_capturer<tf::cublasFlowCapturer>();
       auto vsetx = capturer->vset(N, hx.data(), 1, dx, 1);
       auto vsety = capturer->vset(N, hy.data(), 1, dy, 1);
@@ -257,8 +257,8 @@ void swap() {
     REQUIRE(ry[i] == hx[i]);
   }
   
-  tf::cuda_free(dx);
-  tf::cuda_free(dy);
+  tf::hip_free(dx);
+  tf::hip_free(dy);
 }
 
 TEST_CASE("swap.float" * doctest::timeout(300)) {
@@ -285,14 +285,14 @@ void scal() {
     rx[i] = rand() % 100 - 50;
   }
 
-  auto dx = tf::cuda_malloc_device<T>(N);
-  auto alpha = tf::cuda_malloc_device<T>(1);
+  auto dx = tf::hip_malloc_device<T>(N);
+  auto alpha = tf::hip_malloc_device<T>(1);
 
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  taskflow.emplace([&](tf::cudaFlow& cf){
-    cf.capture([&](tf::cudaFlowCapturer& cap){
+  taskflow.emplace([&](tf::hipFlow& cf){
+    cf.capture([&](tf::hipFlowCapturer& cap){
       auto capturer = cap.make_capturer<tf::cublasFlowCapturer>();
       auto vsetx = capturer->vset(N, hx.data(), 1, dx, 1);
       auto spar = cap.single_task([alpha] __device__ () {
@@ -311,8 +311,8 @@ void scal() {
     REQUIRE(std::abs(rx[i] - 2.0*hx[i]) < 0.0001);
   }
   
-  tf::cuda_free(dx);
-  tf::cuda_free(alpha);
+  tf::hip_free(dx);
+  tf::hip_free(alpha);
 }
 
 TEST_CASE("scal.float" * doctest::timeout(300)) {

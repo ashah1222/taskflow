@@ -18,8 +18,8 @@ foreach(test IN LISTS TF_CUBLAS_UNITTESTS)
 
   # avoid cmake 3.18+ warning
   # we let nvcc to decide the flag if the architecture is not given
-  if(NOT CUDA_ARCHITECTURES)
-    set_property(TARGET ${test} PROPERTY CUDA_ARCHITECTURES OFF)
+  if(NOT HIP_ARCHITECTURES)
+    set_property(TARGET ${test} PROPERTY HIP_ARCHITECTURES OFF)
   endif()
   
   doctest_discover_tests(${test})

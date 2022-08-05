@@ -31,9 +31,9 @@ dependency between two tasks. A task is one of the following types:
   5. module task         : the task constructed from tf::Taskflow::composed_of
   6. runtime task        : the callable constructible from
                            @c std::function<void(tf::Runtime&)>
-  7. %cudaFlow task      : the callable constructible from
-                           @c std::function<void(tf::cudaFlow&)> or
-                           @c std::function<void(tf::cudaFlowCapturer&)>
+  7. %hipFlow task      : the callable constructible from
+                           @c std::function<void(tf::hipFlow&)> or
+                           @c std::function<void(tf::hipFlowCapturer&)>
   8. %syclFlow task      : the callable constructible from
                            @c std::function<void(tf::syclFlow&)>
 
@@ -422,7 +422,7 @@ inline void Taskflow::_dump(
       os << "shape=component";
     break;
 
-    case Node::CUDAFLOW:
+    case Node::hipFLOW:
       os << " style=\"filled\""
          << " color=\"black\" fillcolor=\"purple\""
          << " fontcolor=\"white\""
@@ -476,8 +476,8 @@ inline void Taskflow::_dump(
     }
     break;
 
-    case Node::CUDAFLOW: {
-      std::get_if<Node::cudaFlow>(&node->_handle)->graph->dump(
+    case Node::hipFLOW: {
+      std::get_if<Node::hipFlow>(&node->_handle)->graph->dump(
         os, node, node->_name
       );
     }

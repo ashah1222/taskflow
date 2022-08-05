@@ -21,8 +21,8 @@ namespace tf {
 enum class TaskType : int {
   /** @brief placeholder task type */
   PLACEHOLDER = 0,
-  /** @brief cudaFlow task type */
-  CUDAFLOW,
+  /** @brief hipFlow task type */
+  hipFLOW,
   /** @brief syclFlow task type */
   SYCLFLOW,
   /** @brief static task type */
@@ -49,7 +49,7 @@ enum class TaskType : int {
 */
 inline constexpr std::array<TaskType, 10> TASK_TYPES = {
   TaskType::PLACEHOLDER,
-  TaskType::CUDAFLOW,
+  TaskType::hipFLOW,
   TaskType::SYCLFLOW,
   TaskType::STATIC,
   TaskType::DYNAMIC,
@@ -67,7 +67,7 @@ The name of each task type is the litte-case string of its characters.
 
 @code{.cpp}
 TaskType::PLACEHOLDER     ->  "placeholder"
-TaskType::CUDAFLOW        ->  "cudaflow"
+TaskType::hipFLOW        ->  "hipflow"
 TaskType::SYCLFLOW        ->  "syclflow"
 TaskType::STATIC          ->  "static"
 TaskType::DYNAMIC         ->  "subflow"
@@ -84,7 +84,7 @@ inline const char* to_string(TaskType type) {
 
   switch(type) {
     case TaskType::PLACEHOLDER:      val = "placeholder";     break;
-    case TaskType::CUDAFLOW:         val = "cudaflow";        break;
+    case TaskType::hipFLOW:         val = "hipflow";        break;
     case TaskType::SYCLFLOW:         val = "syclflow";        break;
     case TaskType::STATIC:           val = "static";          break;
     case TaskType::DYNAMIC:          val = "subflow";         break;
@@ -141,14 +141,14 @@ constexpr bool is_multi_condition_task_v =
   std::is_invocable_r_v<SmallVector<int>, C>;
 
 /**
-@brief determines if a callable is a %cudaFlow task
+@brief determines if a callable is a %hipFlow task
 
-A cudaFlow task is a callable object constructible from
-std::function<void(tf::cudaFlow&)> or std::function<void(tf::cudaFlowCapturer&)>.
+A hipFlow task is a callable object constructible from
+std::function<void(tf::hipFlow&)> or std::function<void(tf::hipFlowCapturer&)>.
 */
 template <typename C>
-constexpr bool is_cudaflow_task_v = std::is_invocable_r_v<void, C, cudaFlow&> ||
-                                    std::is_invocable_r_v<void, C, cudaFlowCapturer&>;
+constexpr bool is_hipflow_task_v = std::is_invocable_r_v<void, C, hipFlow&> ||
+                                    std::is_invocable_r_v<void, C, hipFlowCapturer&>;
 
 /**
 @brief determines if a callable is a %syclFlow task
@@ -264,7 +264,7 @@ class Task {
     @tparam C callable type
 
     @param callable callable to construct one of the static, dynamic, condition,
-           and cudaFlow tasks
+           and hipFlow tasks
 
     @return @c *this
     */
@@ -541,7 +541,7 @@ inline TaskType Task::type() const {
     case Node::MODULE:          return TaskType::MODULE;
     case Node::ASYNC:           return TaskType::ASYNC;
     case Node::SILENT_ASYNC:    return TaskType::ASYNC;
-    case Node::CUDAFLOW:        return TaskType::CUDAFLOW;
+    case Node::hipFLOW:        return TaskType::hipFLOW;
     case Node::SYCLFLOW:        return TaskType::SYCLFLOW;
     case Node::RUNTIME:         return TaskType::RUNTIME;
     default:                    return TaskType::UNDEFINED;
@@ -593,8 +593,8 @@ Task& Task::work(C&& c) {
   else if constexpr(is_multi_condition_task_v<C>) {
     _node->_handle.emplace<Node::MultiCondition>(std::forward<C>(c));
   }
-  else if constexpr(is_cudaflow_task_v<C>) {
-    _node->_handle.emplace<Node::cudaFlow>(std::forward<C>(c));
+  else if constexpr(is_hipflow_task_v<C>) {
+    _node->_handle.emplace<Node::hipFlow>(std::forward<C>(c));
   }
   else if constexpr(is_runtime_task_v<C>) {
     _node->_handle.emplace<Node::Runtime>(std::forward<C>(c));
@@ -621,7 +621,7 @@ inline Task& Task::data(void* data) {
 // ----------------------------------------------------------------------------
 
 /**
-@brief overload of ostream inserter operator for cudaTask
+@brief overload of ostream inserter operator for hipTask
 */
 inline std::ostream& operator << (std::ostream& os, const Task& task) {
   task.dump(os);
@@ -736,7 +736,7 @@ inline TaskType TaskView::type() const {
     case Node::MODULE:          return TaskType::MODULE;
     case Node::ASYNC:           return TaskType::ASYNC;
     case Node::SILENT_ASYNC:    return TaskType::ASYNC;
-    case Node::CUDAFLOW:        return TaskType::CUDAFLOW;
+    case Node::hipFLOW:        return TaskType::hipFLOW;
     case Node::SYCLFLOW:        return TaskType::SYCLFLOW;
     case Node::RUNTIME:         return TaskType::RUNTIME;
     default:                    return TaskType::UNDEFINED;

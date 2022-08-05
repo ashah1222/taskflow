@@ -1,5 +1,5 @@
 #include <taskflow/taskflow.hpp>
-#include <taskflow/cudaflow.hpp>
+#include <taskflow/hipflow.hpp>
 #include <taskflow/cublasflow.hpp>
 
 int main() {
@@ -24,10 +24,10 @@ int main() {
   tf::Taskflow taskflow("Ax = b");
   tf::Executor executor;
 
-  auto dA = tf::cuda_malloc_device<float>(hA.size());
-  auto dB = tf::cuda_malloc_device<float>(hB.size());
+  auto dA = tf::hip_malloc_device<float>(hA.size());
+  auto dB = tf::hip_malloc_device<float>(hB.size());
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
 
     auto blas = capturer.make_capturer<tf::cublasFlowCapturer>();
     auto h2dA = capturer.copy(dA, hA.data(), hA.size()).name("copy A");

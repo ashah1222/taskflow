@@ -44,13 +44,13 @@ constexpr const char* cublas_error_to_string(cublasStatus_t error) {
 
 
 #define TF_CHECK_CUBLAS(...)                                   \
-if(TF_CUDA_GET_FIRST(__VA_ARGS__) != CUBLAS_STATUS_SUCCESS) {  \
+if(TF_HIP_GET_FIRST(__VA_ARGS__) != CUBLAS_STATUS_SUCCESS) {  \
   std::ostringstream oss;                                      \
-  auto ev = TF_CUDA_GET_FIRST(__VA_ARGS__);                    \
+  auto ev = TF_HIP_GET_FIRST(__VA_ARGS__);                    \
   auto error_str  = cublas_error_to_string(ev);                \
   oss << "[" << __FILE__ << ":" << __LINE__ << " "             \
       << error_str << "] ";                                    \
-  tf::ostreamize(oss, TF_CUDA_REMOVE_FIRST(__VA_ARGS__));      \
+  tf::ostreamize(oss, TF_HIP_REMOVE_FIRST(__VA_ARGS__));      \
   throw std::runtime_error(oss.str());                         \
 }
 

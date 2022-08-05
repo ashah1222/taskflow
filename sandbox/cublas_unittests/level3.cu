@@ -46,30 +46,30 @@ void geam(
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  for(size_t d=0; d<tf::cuda_get_num_devices(); d++) {
+  for(size_t d=0; d<tf::hip_get_num_devices(); d++) {
 
-    auto dA = tf::cuda_malloc_device<T>(M*N, d);
-    auto dB = tf::cuda_malloc_device<T>(M*N, d);
-    auto dC = tf::cuda_malloc_device<T>(M*N, d);
-    auto dAlpha = tf::cuda_malloc_device<T>(1, d);
-    auto dBeta  = tf::cuda_malloc_device<T>(1, d);
+    auto dA = tf::hip_malloc_device<T>(M*N, d);
+    auto dB = tf::hip_malloc_device<T>(M*N, d);
+    auto dC = tf::hip_malloc_device<T>(M*N, d);
+    auto dAlpha = tf::hip_malloc_device<T>(1, d);
+    auto dBeta  = tf::hip_malloc_device<T>(1, d);
 
     T* hC = new T[N*M];
 
-    auto cudaflow = taskflow.emplace_on([=, &hA, &hB](tf::cudaFlow& cf){
+    auto hipflow = taskflow.emplace_on([=, &hA, &hB](tf::hipFlow& cf){
 
-      REQUIRE(tf::cuda_get_device() == d);
+      REQUIRE(tf::hip_get_device() == d);
       
       auto copyA = cf.copy(dA, hA.data(), M*N);
       auto copyB = cf.copy(dB, hB.data(), M*N);
       auto alpha = cf.single_task([=] __device__ () { *dAlpha = 1; });
       auto beta  = cf.single_task([=] __device__ () { *dBeta  = 2; });
 
-      tf::cudaTask geam; 
+      tf::hipTask geam; 
       
       if(tranA && !tranB) {        // C = A^T + B
         if (row_major) {
-          geam = cf.capture([&](tf::cudaFlowCapturer& cap){
+          geam = cf.capture([&](tf::hipFlowCapturer& cap){
             cap.make_capturer<tf::cublasFlowCapturer>()->c_geam(
               CUBLAS_OP_T, CUBLAS_OP_N,
               M, N, dAlpha, dA, M, dBeta, dB, N, dC, N
@@ -77,7 +77,7 @@ void geam(
           });
         }
         else {
-          geam = cf.capture([&](tf::cudaFlowCapturer& cap){
+          geam = cf.capture([&](tf::hipFlowCapturer& cap){
             cap.make_capturer<tf::cublasFlowCapturer>()->geam(
               CUBLAS_OP_T, CUBLAS_OP_N,
               N, M, dAlpha, dA, M, dBeta, dB, N, dC, N
@@ -87,7 +87,7 @@ void geam(
       }
       else if(!tranA && !tranB) {  // C = A + B (r-major)
         if (row_major) {
-          geam = cf.capture([&](tf::cudaFlowCapturer& cap){
+          geam = cf.capture([&](tf::hipFlowCapturer& cap){
             cap.make_capturer<tf::cublasFlowCapturer>()->c_geam(
               CUBLAS_OP_N, CUBLAS_OP_N,
               M, N, dAlpha, dA, N, dBeta, dB, N, dC, N
@@ -95,7 +95,7 @@ void geam(
           });
         }
         else {
-          geam = cf.capture([&](tf::cudaFlowCapturer& cap){
+          geam = cf.capture([&](tf::hipFlowCapturer& cap){
             cap.make_capturer<tf::cublasFlowCapturer>()->geam(
               CUBLAS_OP_N, CUBLAS_OP_N,
               N, M, dAlpha, dA, N, dBeta, dB, N, dC, N
@@ -105,7 +105,7 @@ void geam(
       }
       else if(!tranA && tranB) {   // C = A + B^T (r-major)
         if(row_major) {
-          geam = cf.capture([&](tf::cudaFlowCapturer& cap){
+          geam = cf.capture([&](tf::hipFlowCapturer& cap){
             cap.make_capturer<tf::cublasFlowCapturer>()->c_geam(
               CUBLAS_OP_N, CUBLAS_OP_T,
               M, N, dAlpha, dA, N, dBeta, dB, M, dC, N
@@ -113,7 +113,7 @@ void geam(
           });
         }
         else {
-          geam = cf.capture([&](tf::cudaFlowCapturer& cap){
+          geam = cf.capture([&](tf::hipFlowCapturer& cap){
             cap.make_capturer<tf::cublasFlowCapturer>()->geam(
               CUBLAS_OP_N, CUBLAS_OP_T,
               N, M, dAlpha, dA, N, dBeta, dB, M, dC, N
@@ -123,7 +123,7 @@ void geam(
       }
       else {                       // C = A^T * B^T (r-major)
         if (row_major) {
-          geam = cf.capture([&](tf::cudaFlowCapturer& cap){
+          geam = cf.capture([&](tf::hipFlowCapturer& cap){
             cap.make_capturer<tf::cublasFlowCapturer>()->c_geam(
               CUBLAS_OP_T, CUBLAS_OP_T,
               M, N, dAlpha, dA, M, dBeta, dB, M, dC, N
@@ -131,7 +131,7 @@ void geam(
           });
         }
         else {
-          geam = cf.capture([&](tf::cudaFlowCapturer& cap){
+          geam = cf.capture([&](tf::hipFlowCapturer& cap){
             cap.make_capturer<tf::cublasFlowCapturer>()->geam(
               CUBLAS_OP_T, CUBLAS_OP_T,
               N, M, dAlpha, dA, M, dBeta, dB, M, dC, N
@@ -150,15 +150,15 @@ void geam(
       for(size_t i=0; i<golden.size(); i++) {
         REQUIRE(std::fabs(hC[i]-golden[i]) < 0.0001);
       }
-      tf::cuda_free(dA);
-      tf::cuda_free(dB);
-      tf::cuda_free(dC);
-      tf::cuda_free(dAlpha);
-      tf::cuda_free(dBeta);
+      tf::hip_free(dA);
+      tf::hip_free(dB);
+      tf::hip_free(dC);
+      tf::hip_free(dAlpha);
+      tf::hip_free(dBeta);
       delete [] hC;
     });
     
-    cudaflow.precede(verify);
+    hipflow.precede(verify);
   }
 
   executor.run(taskflow).wait();
@@ -350,30 +350,30 @@ void gemm(
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  for(size_t d=0; d<tf::cuda_get_num_devices(); d++) {
+  for(size_t d=0; d<tf::hip_get_num_devices(); d++) {
 
-    auto dA = tf::cuda_malloc_device<T>(K*M, d);
-    auto dB = tf::cuda_malloc_device<T>(K*N, d);
-    auto dC = tf::cuda_malloc_device<T>(M*N, d);
-    auto dAlpha = tf::cuda_malloc_device<T>(1, d);
-    auto dBeta  = tf::cuda_malloc_device<T>(1, d);
+    auto dA = tf::hip_malloc_device<T>(K*M, d);
+    auto dB = tf::hip_malloc_device<T>(K*N, d);
+    auto dC = tf::hip_malloc_device<T>(M*N, d);
+    auto dAlpha = tf::hip_malloc_device<T>(1, d);
+    auto dBeta  = tf::hip_malloc_device<T>(1, d);
 
     T* hC = new T[N*M];
 
-    auto cudaflow = taskflow.emplace_on([=, &hA, &hB](tf::cudaFlow& cf){
+    auto hipflow = taskflow.emplace_on([=, &hA, &hB](tf::hipFlow& cf){
 
-      REQUIRE(tf::cuda_get_device() == d);
+      REQUIRE(tf::hip_get_device() == d);
       
       auto copyA = cf.copy(dA, hA.data(), K*M);
       auto copyB = cf.copy(dB, hB.data(), K*N);
       auto alpha = cf.single_task([=] __device__ () { *dAlpha = 1; });
       auto beta  = cf.single_task([=] __device__ () { *dBeta  = 0; });
 
-      tf::cudaTask gemm; 
+      tf::hipTask gemm; 
       
       if(tranA && !tranB) {        // C = A^T * B (r-major)
         if (row_major) {
-          gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+          gemm = cf.capture([&](tf::hipFlowCapturer& flow){
             flow.make_capturer<tf::cublasFlowCapturer>()->c_gemm(
               CUBLAS_OP_T, CUBLAS_OP_N,
               M, N, K, dAlpha, dA, M, dB, N, dBeta, dC, N
@@ -381,7 +381,7 @@ void gemm(
           });
         }
         else {
-          gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+          gemm = cf.capture([&](tf::hipFlowCapturer& flow){
             flow.make_capturer<tf::cublasFlowCapturer>()->gemm(
               CUBLAS_OP_N, CUBLAS_OP_T,
               N, M, K, dAlpha, dB, N, dA, M, dBeta, dC, N
@@ -391,7 +391,7 @@ void gemm(
       }
       else if(!tranA && !tranB) {  // C = A * B (r-major)
         if (row_major) {
-          gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+          gemm = cf.capture([&](tf::hipFlowCapturer& flow){
             flow.make_capturer<tf::cublasFlowCapturer>()->c_gemm(
               CUBLAS_OP_N, CUBLAS_OP_N,
               M, N, K, dAlpha, dA, K, dB, N, dBeta, dC, N
@@ -399,7 +399,7 @@ void gemm(
           });
         }
         else {
-          gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+          gemm = cf.capture([&](tf::hipFlowCapturer& flow){
             flow.make_capturer<tf::cublasFlowCapturer>()->gemm(
               CUBLAS_OP_N, CUBLAS_OP_N,
               N, M, K, dAlpha, dB, N, dA, K, dBeta, dC, N
@@ -409,7 +409,7 @@ void gemm(
       }
       else if(!tranA && tranB) {   // C = A * B^T (r-major)
         if(row_major) {
-          gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+          gemm = cf.capture([&](tf::hipFlowCapturer& flow){
             flow.make_capturer<tf::cublasFlowCapturer>()->c_gemm(
               CUBLAS_OP_N, CUBLAS_OP_T,
               M, N, K, dAlpha, dA, K, dB, K, dBeta, dC, N
@@ -417,7 +417,7 @@ void gemm(
           });
         }
         else {
-          gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+          gemm = cf.capture([&](tf::hipFlowCapturer& flow){
             flow.make_capturer<tf::cublasFlowCapturer>()->gemm(
               CUBLAS_OP_T, CUBLAS_OP_N,
               N, M, K, dAlpha, dB, K, dA, K, dBeta, dC, N
@@ -427,7 +427,7 @@ void gemm(
       }
       else {                       // C = A^T * B^T (r-major)
         if (row_major) {
-          gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+          gemm = cf.capture([&](tf::hipFlowCapturer& flow){
             flow.make_capturer<tf::cublasFlowCapturer>()->c_gemm(
               CUBLAS_OP_T, CUBLAS_OP_T,
               M, N, K, dAlpha, dA, M, dB, K, dBeta, dC, N
@@ -435,7 +435,7 @@ void gemm(
           });
         }
         else {
-          gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+          gemm = cf.capture([&](tf::hipFlowCapturer& flow){
             flow.make_capturer<tf::cublasFlowCapturer>()->gemm(
               CUBLAS_OP_T, CUBLAS_OP_T,
               N, M, K, dAlpha, dB, K, dA, M, dBeta, dC, N
@@ -454,15 +454,15 @@ void gemm(
       for(size_t i=0; i<golden.size(); i++) {
         REQUIRE(std::fabs(hC[i]-golden[i]) < 0.0001);
       }
-      tf::cuda_free(dA);
-      tf::cuda_free(dB);
-      tf::cuda_free(dC);
-      tf::cuda_free(dAlpha);
-      tf::cuda_free(dBeta);
+      tf::hip_free(dA);
+      tf::hip_free(dB);
+      tf::hip_free(dC);
+      tf::hip_free(dAlpha);
+      tf::hip_free(dBeta);
       delete [] hC;
     });
     
-    cudaflow.precede(verify);
+    hipflow.precede(verify);
   }
 
   executor.run(taskflow).wait();
@@ -663,20 +663,20 @@ void gemm_batched(
 
   int d = 0;
   
-  auto dA = tf::cuda_malloc_device<T>(S*K*M, d);
-  auto dB = tf::cuda_malloc_device<T>(S*K*N, d);
-  auto dC = tf::cuda_malloc_device<T>(S*M*N, d);
-  auto dAlpha = tf::cuda_malloc_device<T>(1, d);
-  auto dBeta  = tf::cuda_malloc_device<T>(1, d);
+  auto dA = tf::hip_malloc_device<T>(S*K*M, d);
+  auto dB = tf::hip_malloc_device<T>(S*K*N, d);
+  auto dC = tf::hip_malloc_device<T>(S*M*N, d);
+  auto dAlpha = tf::hip_malloc_device<T>(1, d);
+  auto dBeta  = tf::hip_malloc_device<T>(1, d);
   auto hC = new T[S*M*N];
 
-  auto dAs = tf::cuda_malloc_device<T*>(S, d);
-  auto dBs = tf::cuda_malloc_device<T*>(S, d);
-  auto dCs = tf::cuda_malloc_device<T*>(S, d);
+  auto dAs = tf::hip_malloc_device<T*>(S, d);
+  auto dBs = tf::hip_malloc_device<T*>(S, d);
+  auto dCs = tf::hip_malloc_device<T*>(S, d);
 
-  auto cudaflow = taskflow.emplace([&](tf::cudaFlow& cf){
+  auto hipflow = taskflow.emplace([&](tf::hipFlow& cf){
 
-    tf::cudaTask copyA[S], copyB[S];
+    tf::hipTask copyA[S], copyB[S];
 
     for(size_t s=0; s<S; s++) {
       copyA[s] = cf.copy(dA + s*K*M, hA[s], K*M);
@@ -693,18 +693,18 @@ void gemm_batched(
       }
     });
 
-    tf::cudaTask gemm; 
+    tf::hipTask gemm; 
     
     if(!tranA && !tranB) {  // C = A * B (r-major)
       if (row_major) {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->c_gemm_batched(CUBLAS_OP_N, CUBLAS_OP_N,
             M, N, K, dAlpha, (const T**)dAs, K, (const T**)dBs, N, dBeta, dCs, N, S
           );
         });
       }
       else {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->gemm_batched(CUBLAS_OP_N, CUBLAS_OP_N,
             N, M, K, dAlpha, (const T**)dBs, N, (const T**)dAs, K, dBeta, dCs, N, S
           );
@@ -713,14 +713,14 @@ void gemm_batched(
     }
     else if(tranA && !tranB) {        // C = A^T * B (r-major)
       if (row_major) {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->c_gemm_batched(CUBLAS_OP_T, CUBLAS_OP_N,
             M, N, K, dAlpha, (const T**)dAs, M, (const T**)dBs, N, dBeta, dCs, N, S
           );
         });
       }
       else {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->gemm_batched(CUBLAS_OP_N, CUBLAS_OP_T,
             N, M, K, dAlpha, (const T**)dBs, N, (const T**)dAs, M, dBeta, dCs, N, S
           );
@@ -729,14 +729,14 @@ void gemm_batched(
     }
     else if(!tranA && tranB) {   // C = A * B^T (r-major)
       if(row_major) {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->c_gemm_batched(CUBLAS_OP_N, CUBLAS_OP_T,
             M, N, K, dAlpha, (const T**)dAs, K, (const T**)dBs, K, dBeta, dCs, N, S
           );
         });
       }
       else {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->gemm_batched(CUBLAS_OP_T, CUBLAS_OP_N,
             N, M, K, dAlpha, (const T**)dBs, K, (const T**)dAs, K, dBeta, dCs, N, S
           );
@@ -745,14 +745,14 @@ void gemm_batched(
     }
     else {                       // C = A^T * B^T (r-major)
       if (row_major) {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->c_gemm_batched(CUBLAS_OP_T, CUBLAS_OP_T,
             M, N, K, dAlpha, (const T**)dAs, M, (const T**)dBs, K, dBeta, dCs, N, S
           );
         });
       }
       else {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->gemm_batched(CUBLAS_OP_T, CUBLAS_OP_T,
             N, M, K, dAlpha, (const T**)dBs, K, (const T**)dAs, M, dBeta, dCs, N, S
           );
@@ -776,18 +776,18 @@ void gemm_batched(
         REQUIRE(std::fabs(p[i]-golden[i]) < 0.0001);
       }
     }
-    tf::cuda_free(dA);
-    tf::cuda_free(dB);
-    tf::cuda_free(dC);
-    tf::cuda_free(dAlpha);
-    tf::cuda_free(dBeta);
-    tf::cuda_free(dAs);
-    tf::cuda_free(dBs);
-    tf::cuda_free(dCs);
+    tf::hip_free(dA);
+    tf::hip_free(dB);
+    tf::hip_free(dC);
+    tf::hip_free(dAlpha);
+    tf::hip_free(dBeta);
+    tf::hip_free(dAs);
+    tf::hip_free(dBs);
+    tf::hip_free(dCs);
     delete [] hC;
   });
   
-  cudaflow.precede(verify);
+  hipflow.precede(verify);
   
 
   executor.run(taskflow).wait();
@@ -1017,18 +1017,18 @@ void gemm_strided_batched(
 
   int d = 0;
   
-  auto dA = tf::cuda_malloc_device<T>(S*K*M, d);
-  auto dB = tf::cuda_malloc_device<T>(S*K*N, d);
-  auto dC = tf::cuda_malloc_device<T>(S*M*N, d);
-  auto dAlpha = tf::cuda_malloc_device<T>(1, d);
-  auto dBeta  = tf::cuda_malloc_device<T>(1, d);
+  auto dA = tf::hip_malloc_device<T>(S*K*M, d);
+  auto dB = tf::hip_malloc_device<T>(S*K*N, d);
+  auto dC = tf::hip_malloc_device<T>(S*M*N, d);
+  auto dAlpha = tf::hip_malloc_device<T>(1, d);
+  auto dBeta  = tf::hip_malloc_device<T>(1, d);
   auto hC = new T[S*M*N];
 
   int sA = K*M;
   int sB = K*N;
   int sC = M*N;
 
-  auto cudaflow = taskflow.emplace([&](tf::cudaFlow& cf){
+  auto hipflow = taskflow.emplace([&](tf::hipFlow& cf){
 
     auto copyA = cf.copy(dA, hA, S*K*M);
     auto copyB = cf.copy(dB, hB, S*K*N);
@@ -1036,11 +1036,11 @@ void gemm_strided_batched(
     auto alpha = cf.single_task([=] __device__ () { *dAlpha = 1; });
     auto beta  = cf.single_task([=] __device__ () { *dBeta  = 0; });
 
-    tf::cudaTask gemm; 
+    tf::hipTask gemm; 
     
     if(!tranA && !tranB) {  // C = A * B (r-major)
       if (row_major) {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->c_gemm_sbatched(
             CUBLAS_OP_N, CUBLAS_OP_N,
             M, N, K, dAlpha, dA, K, sA, dB, N, sB, dBeta, dC, N, sC, S
@@ -1048,7 +1048,7 @@ void gemm_strided_batched(
         });
       }
       else {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->gemm_sbatched(
             CUBLAS_OP_N, CUBLAS_OP_N,
             N, M, K, dAlpha, dB, N, sB, dA, K, sA, dBeta, dC, N, sC, S
@@ -1058,7 +1058,7 @@ void gemm_strided_batched(
     }
     else if(tranA && !tranB) {        // C = A^T * B (r-major)
       if (row_major) {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->c_gemm_sbatched(
             CUBLAS_OP_T, CUBLAS_OP_N,
             M, N, K, dAlpha, dA, M, sA, dB, N, sB, dBeta, dC, N, sC, S
@@ -1066,7 +1066,7 @@ void gemm_strided_batched(
         });
       }
       else {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->gemm_sbatched(
             CUBLAS_OP_N, CUBLAS_OP_T,
             N, M, K, dAlpha, dB, N, sB, dA, M, sA, dBeta, dC, N, sC, S
@@ -1076,7 +1076,7 @@ void gemm_strided_batched(
     }
     else if(!tranA && tranB) {   // C = A * B^T (r-major)
       if(row_major) {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->c_gemm_sbatched(
             CUBLAS_OP_N, CUBLAS_OP_T,
             M, N, K, dAlpha, dA, K, sA, dB, K, sB, dBeta, dC, N, sC, S
@@ -1084,7 +1084,7 @@ void gemm_strided_batched(
         });
       }
       else {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->gemm_sbatched(
             CUBLAS_OP_T, CUBLAS_OP_N,
             N, M, K, dAlpha, dB, K, sB, dA, K, sA, dBeta, dC, N, sC, S
@@ -1094,7 +1094,7 @@ void gemm_strided_batched(
     }
     else {                       // C = A^T * B^T (r-major)
       if (row_major) {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->c_gemm_sbatched(
             CUBLAS_OP_T, CUBLAS_OP_T,
             M, N, K, dAlpha, dA, M, sA, dB, K, sB, dBeta, dC, N, sC, S
@@ -1102,7 +1102,7 @@ void gemm_strided_batched(
         });
       }
       else {
-        gemm = cf.capture([&](tf::cudaFlowCapturer& flow){
+        gemm = cf.capture([&](tf::hipFlowCapturer& flow){
           flow.make_capturer<tf::cublasFlowCapturer>()->gemm_sbatched(
             CUBLAS_OP_T, CUBLAS_OP_T,
             N, M, K, dAlpha, dB, K, sB, dA, M, sA, dBeta, dC, N, sC, S
@@ -1124,15 +1124,15 @@ void gemm_strided_batched(
         REQUIRE(std::fabs(p[i]-golden[i]) < 0.0001);
       }
     }
-    tf::cuda_free(dA);
-    tf::cuda_free(dB);
-    tf::cuda_free(dC);
-    tf::cuda_free(dAlpha);
-    tf::cuda_free(dBeta);
+    tf::hip_free(dA);
+    tf::hip_free(dB);
+    tf::hip_free(dC);
+    tf::hip_free(dAlpha);
+    tf::hip_free(dBeta);
     delete [] hC;
   });
   
-  cudaflow.precede(verify);
+  hipflow.precede(verify);
 
   executor.run(taskflow).wait();
 }
@@ -1379,13 +1379,13 @@ void symm_test() {
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  auto dA = tf::cuda_malloc_device<T>(hA.size());
-  auto dB = tf::cuda_malloc_device<T>(hB.size());
-  auto dC = tf::cuda_malloc_device<T>(hC.size());
-  auto dalpha = tf::cuda_malloc_device<T>(1);
-  auto dbeta  = tf::cuda_malloc_device<T>(1);
+  auto dA = tf::hip_malloc_device<T>(hA.size());
+  auto dB = tf::hip_malloc_device<T>(hB.size());
+  auto dC = tf::hip_malloc_device<T>(hC.size());
+  auto dalpha = tf::hip_malloc_device<T>(1);
+  auto dbeta  = tf::hip_malloc_device<T>(1);
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
     auto blas = capturer.make_capturer<tf::cublasFlowCapturer>();
     auto alpha = capturer.single_task([=] __device__ () { *dalpha = 1; });
     auto beta  = capturer.single_task([=] __device__ () { *dbeta = 0; });
@@ -1452,12 +1452,12 @@ void syrk_test() {
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  auto dA = tf::cuda_malloc_device<T>(hA.size());
-  auto dC = tf::cuda_malloc_device<T>(hC.size());
-  auto dalpha = tf::cuda_malloc_device<T>(1);
-  auto dbeta  = tf::cuda_malloc_device<T>(1);
+  auto dA = tf::hip_malloc_device<T>(hA.size());
+  auto dC = tf::hip_malloc_device<T>(hC.size());
+  auto dalpha = tf::hip_malloc_device<T>(1);
+  auto dbeta  = tf::hip_malloc_device<T>(1);
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
     auto blas = capturer.make_capturer<tf::cublasFlowCapturer>();
     auto alpha = capturer.single_task([=] __device__ () { *dalpha = 1; });
     auto beta  = capturer.single_task([=] __device__ () { *dbeta = 1; });
@@ -1533,13 +1533,13 @@ void syr2k_test() {
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  auto dA = tf::cuda_malloc_device<T>(hA.size());
-  auto dB = tf::cuda_malloc_device<T>(hB.size());
-  auto dC = tf::cuda_malloc_device<T>(hC.size());
-  auto dalpha = tf::cuda_malloc_device<T>(1);
-  auto dbeta  = tf::cuda_malloc_device<T>(1);
+  auto dA = tf::hip_malloc_device<T>(hA.size());
+  auto dB = tf::hip_malloc_device<T>(hB.size());
+  auto dC = tf::hip_malloc_device<T>(hC.size());
+  auto dalpha = tf::hip_malloc_device<T>(1);
+  auto dbeta  = tf::hip_malloc_device<T>(1);
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
     auto blas = capturer.make_capturer<tf::cublasFlowCapturer>();
     auto alpha = capturer.single_task([=] __device__ () { *dalpha = 1; });
     auto beta  = capturer.single_task([=] __device__ () { *dbeta = 1; });
@@ -1616,12 +1616,12 @@ void trmm_test() {
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  auto dA = tf::cuda_malloc_device<T>(hA.size());
-  auto dB = tf::cuda_malloc_device<T>(hB.size());
-  auto dC = tf::cuda_malloc_device<T>(hC.size());
-  auto dalpha = tf::cuda_malloc_device<T>(1);
+  auto dA = tf::hip_malloc_device<T>(hA.size());
+  auto dB = tf::hip_malloc_device<T>(hB.size());
+  auto dC = tf::hip_malloc_device<T>(hC.size());
+  auto dalpha = tf::hip_malloc_device<T>(1);
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
     auto blas = capturer.make_capturer<tf::cublasFlowCapturer>();
     auto alpha = capturer.single_task([=] __device__ () { *dalpha = 1; });
     auto h2dA  = capturer.copy(dA, hA.data(), hA.size());
@@ -1690,11 +1690,11 @@ void trsm_test() {
   tf::Taskflow taskflow;
   tf::Executor executor;
 
-  auto dA = tf::cuda_malloc_device<T>(hA.size());
-  auto dB = tf::cuda_malloc_device<T>(hB.size());
-  auto dAlpha = tf::cuda_malloc_device<T>(1);
+  auto dA = tf::hip_malloc_device<T>(hA.size());
+  auto dB = tf::hip_malloc_device<T>(hB.size());
+  auto dAlpha = tf::hip_malloc_device<T>(1);
 
-  taskflow.emplace([&](tf::cudaFlowCapturer& capturer){
+  taskflow.emplace([&](tf::hipFlowCapturer& capturer){
     auto blas = capturer.make_capturer<tf::cublasFlowCapturer>();
     auto alpha = capturer.single_task([=] __device__ () { *dAlpha = 1; });
     auto h2dA = capturer.copy(dA, hA.data(), hA.size());

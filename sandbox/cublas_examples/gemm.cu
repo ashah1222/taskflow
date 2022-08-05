@@ -2,7 +2,7 @@
 // using tf::cublasFlowCapturer::c_gemm.
 
 #include <taskflow/taskflow.hpp>
-#include <taskflow/cudaflow.hpp>
+#include <taskflow/hipflow.hpp>
 #include <taskflow/cublasflow.hpp>
 
 int main() {
@@ -27,37 +27,37 @@ int main() {
 
   std::vector<float> hC(M*N);
     
-  //auto dA = tf::cuda_malloc_device<float>(hA.size());
-  //auto dB = tf::cuda_malloc_device<float>(hB.size());
-  //auto dC = tf::cuda_malloc_device<float>(hC.size());
-  //auto dAlpha = tf::cuda_malloc_device<float>(1);
-  //auto dBeta  = tf::cuda_malloc_device<float>(1);
+  //auto dA = tf::hip_malloc_device<float>(hA.size());
+  //auto dB = tf::hip_malloc_device<float>(hB.size());
+  //auto dC = tf::hip_malloc_device<float>(hC.size());
+  //auto dAlpha = tf::hip_malloc_device<float>(1);
+  //auto dBeta  = tf::hip_malloc_device<float>(1);
   float *dA, *dB, *dC, *dAlpha, *dBeta;
 
   tf::Taskflow taskflow("Matrix Multiplication");
   tf::Executor executor;
 
   auto malloc_dA = taskflow.emplace(
-    [&](){ dA = tf::cuda_malloc_device<float>(hA.size()); }
+    [&](){ dA = tf::hip_malloc_device<float>(hA.size()); }
   ).name("malloc_dA");
   
   auto malloc_dB = taskflow.emplace(
-    [&](){ dB = tf::cuda_malloc_device<float>(hB.size()); }
+    [&](){ dB = tf::hip_malloc_device<float>(hB.size()); }
   ).name("malloc_dB");
   
   auto malloc_dC = taskflow.emplace(
-    [&](){ dC = tf::cuda_malloc_device<float>(hC.size()); }
+    [&](){ dC = tf::hip_malloc_device<float>(hC.size()); }
   ).name("malloc_dC");
   
   auto malloc_dAlpha = taskflow.emplace(
-    [&](){ dAlpha = tf::cuda_malloc_device<float>(1); }
+    [&](){ dAlpha = tf::hip_malloc_device<float>(1); }
   ).name("malloc_dAlpha");
   
   auto malloc_dBeta = taskflow.emplace(
-    [&](){ dBeta = tf::cuda_malloc_device<float>(1); }
+    [&](){ dBeta = tf::hip_malloc_device<float>(1); }
   ).name("malloc_dBeta");
 
-  auto cublasFlow = taskflow.emplace([&](tf::cudaFlowCapturer& capturer) {
+  auto cublasFlow = taskflow.emplace([&](tf::hipFlowCapturer& capturer) {
     auto blas  = capturer.make_capturer<tf::cublasFlowCapturer>();
 
     auto alpha = capturer.single_task([=] __device__ () { *dAlpha = 1; })
