@@ -1,38 +1,25 @@
 Performing C++ SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
 Change Dir: /home/ashah122/taskflow/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/make -f Makefile cmTC_d0b34/fast && /usr/bin/make  -f CMakeFiles/cmTC_d0b34.dir/build.make CMakeFiles/cmTC_d0b34.dir/build
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_6ab88/fast && /usr/bin/make  -f CMakeFiles/cmTC_6ab88.dir/build.make CMakeFiles/cmTC_6ab88.dir/build
 make[1]: Entering directory '/home/ashah122/taskflow/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_d0b34.dir/src.cxx.o
-/opt/rocm/llvm/bin/clang++ -DCMAKE_HAVE_LIBC_PTHREAD   -MD -MT CMakeFiles/cmTC_d0b34.dir/src.cxx.o -MF CMakeFiles/cmTC_d0b34.dir/src.cxx.o.d -o CMakeFiles/cmTC_d0b34.dir/src.cxx.o -c /home/ashah122/taskflow/build/CMakeFiles/CMakeTmp/src.cxx
-Linking CXX executable cmTC_d0b34
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d0b34.dir/link.txt --verbose=1
-/opt/rocm/llvm/bin/clang++ CMakeFiles/cmTC_d0b34.dir/src.cxx.o -o cmTC_d0b34 
-ld.lld: error: undefined symbol: pthread_create
->>> referenced by src.cxx
->>>               CMakeFiles/cmTC_d0b34.dir/src.cxx.o:(main)
-
-ld.lld: error: undefined symbol: pthread_detach
->>> referenced by src.cxx
->>>               CMakeFiles/cmTC_d0b34.dir/src.cxx.o:(main)
-
-ld.lld: error: undefined symbol: pthread_cancel
->>> referenced by src.cxx
->>>               CMakeFiles/cmTC_d0b34.dir/src.cxx.o:(main)
-
-ld.lld: error: undefined symbol: pthread_join
->>> referenced by src.cxx
->>>               CMakeFiles/cmTC_d0b34.dir/src.cxx.o:(main)
-
-ld.lld: error: undefined symbol: pthread_atfork
->>> referenced by src.cxx
->>>               CMakeFiles/cmTC_d0b34.dir/src.cxx.o:(main)
-clang-14: error: linker command failed with exit code 1 (use -v to see invocation)
-CMakeFiles/cmTC_d0b34.dir/build.make:99: recipe for target 'cmTC_d0b34' failed
-make[1]: *** [cmTC_d0b34] Error 1
+Building CXX object CMakeFiles/cmTC_6ab88.dir/src.cxx.o
+/usr/bin/c++ -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles/cmTC_6ab88.dir/src.cxx.o -c /home/ashah122/taskflow/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_6ab88
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_6ab88.dir/link.txt --verbose=1
+/usr/bin/c++ CMakeFiles/cmTC_6ab88.dir/src.cxx.o -o cmTC_6ab88 
+CMakeFiles/cmTC_6ab88.dir/src.cxx.o: In function `main':
+src.cxx:(.text+0x3e): undefined reference to `pthread_create'
+src.cxx:(.text+0x4a): undefined reference to `pthread_detach'
+src.cxx:(.text+0x56): undefined reference to `pthread_cancel'
+src.cxx:(.text+0x67): undefined reference to `pthread_join'
+src.cxx:(.text+0x7b): undefined reference to `pthread_atfork'
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_6ab88.dir/build.make:98: recipe for target 'cmTC_6ab88' failed
+make[1]: *** [cmTC_6ab88] Error 1
 make[1]: Leaving directory '/home/ashah122/taskflow/build/CMakeFiles/CMakeTmp'
-Makefile:127: recipe for target 'cmTC_d0b34/fast' failed
-make: *** [cmTC_d0b34/fast] Error 2
+Makefile:127: recipe for target 'cmTC_6ab88/fast' failed
+make: *** [cmTC_6ab88/fast] Error 2
 
 
 Source file was:
@@ -59,20 +46,20 @@ int main(void)
 Determining if the function pthread_create exists in the pthreads failed with the following output:
 Change Dir: /home/ashah122/taskflow/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/make -f Makefile cmTC_44f20/fast && /usr/bin/make  -f CMakeFiles/cmTC_44f20.dir/build.make CMakeFiles/cmTC_44f20.dir/build
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_e042f/fast && /usr/bin/make  -f CMakeFiles/cmTC_e042f.dir/build.make CMakeFiles/cmTC_e042f.dir/build
 make[1]: Entering directory '/home/ashah122/taskflow/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_44f20.dir/CheckFunctionExists.cxx.o
-/opt/rocm/llvm/bin/clang++   -DCHECK_FUNCTION_EXISTS=pthread_create -MD -MT CMakeFiles/cmTC_44f20.dir/CheckFunctionExists.cxx.o -MF CMakeFiles/cmTC_44f20.dir/CheckFunctionExists.cxx.o.d -o CMakeFiles/cmTC_44f20.dir/CheckFunctionExists.cxx.o -c /home/ashah122/taskflow/build/CMakeFiles/CheckLibraryExists/CheckFunctionExists.cxx
-Linking CXX executable cmTC_44f20
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_44f20.dir/link.txt --verbose=1
-/opt/rocm/llvm/bin/clang++  -DCHECK_FUNCTION_EXISTS=pthread_create CMakeFiles/cmTC_44f20.dir/CheckFunctionExists.cxx.o -o cmTC_44f20  -lpthreads 
-ld.lld: error: unable to find library -lpthreads
-clang-14: error: linker command failed with exit code 1 (use -v to see invocation)
-CMakeFiles/cmTC_44f20.dir/build.make:99: recipe for target 'cmTC_44f20' failed
-make[1]: *** [cmTC_44f20] Error 1
+Building CXX object CMakeFiles/cmTC_e042f.dir/CheckFunctionExists.cxx.o
+/usr/bin/c++   -DCHECK_FUNCTION_EXISTS=pthread_create -o CMakeFiles/cmTC_e042f.dir/CheckFunctionExists.cxx.o -c /home/ashah122/taskflow/build/CMakeFiles/CheckLibraryExists/CheckFunctionExists.cxx
+Linking CXX executable cmTC_e042f
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e042f.dir/link.txt --verbose=1
+/usr/bin/c++  -DCHECK_FUNCTION_EXISTS=pthread_create CMakeFiles/cmTC_e042f.dir/CheckFunctionExists.cxx.o -o cmTC_e042f  -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_e042f.dir/build.make:98: recipe for target 'cmTC_e042f' failed
+make[1]: *** [cmTC_e042f] Error 1
 make[1]: Leaving directory '/home/ashah122/taskflow/build/CMakeFiles/CMakeTmp'
-Makefile:127: recipe for target 'cmTC_44f20/fast' failed
-make: *** [cmTC_44f20/fast] Error 2
+Makefile:127: recipe for target 'cmTC_e042f/fast' failed
+make: *** [cmTC_e042f/fast] Error 2
 
 
 

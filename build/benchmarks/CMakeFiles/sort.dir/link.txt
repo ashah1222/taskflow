@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/sort.dir/sort/main.cpp.o CMakeFiles/sort.dir/sort/taskflow.cpp.o -o sort  /usr/lib/gcc/x86_64-linux-gnu/7/libgomp.so -lpthread -lpthread 

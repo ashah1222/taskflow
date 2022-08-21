@@ -22,6 +22,7 @@ message(STATUS "OpenMP_CXX_LIBRARIES: ${OpenMP_CXX_LIBRARIES}")
 # -----------------------------------------------------------------------------
 # tbb package
 # -----------------------------------------------------------------------------
+#[[ 
 cmake_policy(PUSH)
 cmake_policy(SET CMP0074 NEW)
 if(NOT DEFINED TBB_ROOT_DIR)
@@ -36,6 +37,7 @@ cmake_policy(POP)
 #find_package(TBB REQUIRED tbb_preview)
 # find_package(TBB REQUIRED)
 #cmake_policy(POP)
+]]
 
 # -----------------------------------------------------------------------------
 # Benchmarks
@@ -45,8 +47,6 @@ cmake_policy(POP)
 add_executable(
   wavefront 
   ${TF_BENCHMARK_DIR}/wavefront/main.cpp
-  ${TF_BENCHMARK_DIR}/wavefront/omp.cpp
-  ${TF_BENCHMARK_DIR}/wavefront/tbb.cpp
   ${TF_BENCHMARK_DIR}/wavefront/seq.cpp
   ${TF_BENCHMARK_DIR}/wavefront/taskflow.cpp
 )
@@ -64,8 +64,6 @@ set_target_properties(wavefront PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
 add_executable(
   graph_traversal 
   ${TF_BENCHMARK_DIR}/graph_traversal/main.cpp
-  ${TF_BENCHMARK_DIR}/graph_traversal/omp.cpp
-  ${TF_BENCHMARK_DIR}/graph_traversal/tbb.cpp
   ${TF_BENCHMARK_DIR}/graph_traversal/seq.cpp
   ${TF_BENCHMARK_DIR}/graph_traversal/taskflow.cpp
 )
@@ -83,8 +81,6 @@ set_target_properties(graph_traversal PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAG
 add_executable(
   binary_tree 
   ${TF_BENCHMARK_DIR}/binary_tree/main.cpp
-  ${TF_BENCHMARK_DIR}/binary_tree/tbb.cpp
-  ${TF_BENCHMARK_DIR}/binary_tree/omp.cpp
   ${TF_BENCHMARK_DIR}/binary_tree/taskflow.cpp
 )
 target_include_directories(binary_tree PRIVATE ${PROJECT_SOURCE_DIR}/3rd-party/CLI11)
@@ -101,8 +97,6 @@ set_target_properties(binary_tree PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
 add_executable(
   linear_chain
   ${TF_BENCHMARK_DIR}/linear_chain/main.cpp
-  ${TF_BENCHMARK_DIR}/linear_chain/tbb.cpp
-  ${TF_BENCHMARK_DIR}/linear_chain/omp.cpp
   ${TF_BENCHMARK_DIR}/linear_chain/taskflow.cpp
 )
 target_include_directories(linear_chain PRIVATE ${PROJECT_SOURCE_DIR}/3rd-party/CLI11)
@@ -119,8 +113,6 @@ set_target_properties(linear_chain PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
 add_executable(
   mnist 
   ${TF_BENCHMARK_DIR}/mnist/main.cpp
-  ${TF_BENCHMARK_DIR}/mnist/omp.cpp
-  ${TF_BENCHMARK_DIR}/mnist/tbb.cpp
   ${TF_BENCHMARK_DIR}/mnist/seq.cpp
   ${TF_BENCHMARK_DIR}/mnist/taskflow.cpp
 )
@@ -139,8 +131,6 @@ set_target_properties(mnist PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
 add_executable(
   matrix_multiplication 
   ${TF_BENCHMARK_DIR}/matrix_multiplication/main.cpp
-  ${TF_BENCHMARK_DIR}/matrix_multiplication/omp.cpp
-  ${TF_BENCHMARK_DIR}/matrix_multiplication/tbb.cpp
   ${TF_BENCHMARK_DIR}/matrix_multiplication/taskflow.cpp
 )
 target_include_directories(matrix_multiplication PRIVATE ${PROJECT_SOURCE_DIR}/3rd-party/CLI11)
@@ -157,8 +147,6 @@ set_target_properties(matrix_multiplication PROPERTIES COMPILE_FLAGS ${OpenMP_CX
 add_executable(
   mandelbrot 
   ${TF_BENCHMARK_DIR}/mandelbrot/main.cpp
-  ${TF_BENCHMARK_DIR}/mandelbrot/omp.cpp
-  ${TF_BENCHMARK_DIR}/mandelbrot/tbb.cpp
   ${TF_BENCHMARK_DIR}/mandelbrot/taskflow.cpp
 )
 target_include_directories(mandelbrot PRIVATE ${PROJECT_SOURCE_DIR}/3rd-party/CLI11)
@@ -175,8 +163,6 @@ set_target_properties(mandelbrot PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
 add_executable(
   black_scholes
   ${TF_BENCHMARK_DIR}/black_scholes/main.cpp
-  ${TF_BENCHMARK_DIR}/black_scholes/omp.cpp
-  ${TF_BENCHMARK_DIR}/black_scholes/tbb.cpp
   ${TF_BENCHMARK_DIR}/black_scholes/taskflow.cpp
 )
 target_include_directories(black_scholes PRIVATE ${PROJECT_SOURCE_DIR}/3rd-party/CLI11)
@@ -193,8 +179,6 @@ set_target_properties(black_scholes PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
 add_executable(
   reduce_sum
   ${TF_BENCHMARK_DIR}/reduce_sum/main.cpp
-  ${TF_BENCHMARK_DIR}/reduce_sum/omp.cpp
-  ${TF_BENCHMARK_DIR}/reduce_sum/tbb.cpp
   ${TF_BENCHMARK_DIR}/reduce_sum/taskflow.cpp
 )
 target_include_directories(reduce_sum PRIVATE ${PROJECT_SOURCE_DIR}/3rd-party/CLI11)
@@ -211,8 +195,6 @@ set_target_properties(reduce_sum PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
 add_executable(
   sort
   ${TF_BENCHMARK_DIR}/sort/main.cpp
-  ${TF_BENCHMARK_DIR}/sort/omp.cpp
-  ${TF_BENCHMARK_DIR}/sort/tbb.cpp
   ${TF_BENCHMARK_DIR}/sort/taskflow.cpp
 )
 target_include_directories(sort PRIVATE ${PROJECT_SOURCE_DIR}/3rd-party/CLI11)
@@ -230,8 +212,6 @@ set_target_properties(sort PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS})
 add_executable(
   linear_pipeline
   ${TF_BENCHMARK_DIR}/linear_pipeline/main.cpp
-  ${TF_BENCHMARK_DIR}/linear_pipeline/omp.cpp
-  ${TF_BENCHMARK_DIR}/linear_pipeline/tbb.cpp
   ${TF_BENCHMARK_DIR}/linear_pipeline/taskflow.cpp
 )
 target_include_directories(linear_pipeline PRIVATE ${PROJECT_SOURCE_DIR}/3rd-party/CLI11)
@@ -249,8 +229,6 @@ set_target_properties(linear_pipeline PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAG
 add_executable(
   graph_pipeline
   ${TF_BENCHMARK_DIR}/graph_pipeline/main.cpp
-  ${TF_BENCHMARK_DIR}/graph_pipeline/omp.cpp
-  ${TF_BENCHMARK_DIR}/graph_pipeline/tbb.cpp
   ${TF_BENCHMARK_DIR}/graph_pipeline/taskflow.cpp
   ${TF_BENCHMARK_DIR}/graph_pipeline/gold.cpp
 )
@@ -288,10 +266,8 @@ if(TF_BUILD_HIP)
   ## hip benchmark 1: heterogeneous traversal
   add_executable(
     hetero_traversal 
-    ${TF_BENCHMARK_DIR}/hetero_traversal/main.cu
-    ${TF_BENCHMARK_DIR}/hetero_traversal/taskflow.cu
-    ${TF_BENCHMARK_DIR}/hetero_traversal/tbb.cu
-    ${TF_BENCHMARK_DIR}/hetero_traversal/omp.cu
+    ${TF_BENCHMARK_DIR}/hetero_traversal/main.cpp
+    ${TF_BENCHMARK_DIR}/hetero_traversal/taskflow.cpp
   )
   
   target_include_directories(

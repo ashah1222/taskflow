@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/wavefront.dir/wavefront/main.cpp.o CMakeFiles/wavefront.dir/wavefront/seq.cpp.o CMakeFiles/wavefront.dir/wavefront/taskflow.cpp.o -o wavefront  /usr/lib/gcc/x86_64-linux-gnu/7/libgomp.so -lpthread -lpthread 

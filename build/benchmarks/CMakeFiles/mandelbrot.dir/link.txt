@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/mandelbrot.dir/mandelbrot/main.cpp.o CMakeFiles/mandelbrot.dir/mandelbrot/taskflow.cpp.o -o mandelbrot  /usr/lib/gcc/x86_64-linux-gnu/7/libgomp.so -lpthread -lpthread 
