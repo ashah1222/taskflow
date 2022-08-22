@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/binary_tree.dir/binary_tree/main.cpp.o CMakeFiles/binary_tree.dir/binary_tree/taskflow.cpp.o -o binary_tree  /usr/lib/gcc/x86_64-linux-gnu/7/libgomp.so -lpthread -lpthread 

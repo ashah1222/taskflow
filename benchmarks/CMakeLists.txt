@@ -267,7 +267,7 @@ if(TF_BUILD_HIP)
   add_executable(
     hetero_traversal 
     ${TF_BENCHMARK_DIR}/hetero_traversal/main.cpp
-    ${TF_BENCHMARK_DIR}/hetero_traversal/taskflow.cpp
+    ${TF_BENCHMARK_DIR}/hetero_traversal/taskflow.hpp
   )
   
   target_include_directories(
@@ -282,11 +282,10 @@ if(TF_BUILD_HIP)
     ${OpenMP_CXX_LIBRARIES} 
     tf::default_settings
   )
-  
+  set_target_properties(hetero_traversal PROPERTIES LINKER_LANGUAGE HIPCXX)
   set_target_properties(
-    hetero_traversal PROPERTIES COMPILE_FLAGS "-Xcompiler ${OpenMP_CXX_FLAGS}"
+    hetero_traversal PROPERTIES COMPILE_FLAGS "-Xcompiler ${HIPCXX_FLAGS}"
   )
-  
   # avoid cmake 3.18+ warning
   # we let nvcc to decide the flag if the architecture is not given
   if(NOT hip_ARCHITECTURES)

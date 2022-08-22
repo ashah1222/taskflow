@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/mnist.dir/mnist/main.cpp.o CMakeFiles/mnist.dir/mnist/seq.cpp.o CMakeFiles/mnist.dir/mnist/taskflow.cpp.o -o mnist  /usr/lib/gcc/x86_64-linux-gnu/7/libgomp.so -lpthread -lstdc++fs -lpthread 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <hip/hip_runtimeapi.h>
+#include <hip/hip_runtime_api.h>
 #include <iostream>
 #include <sstream>
 #include <exception>

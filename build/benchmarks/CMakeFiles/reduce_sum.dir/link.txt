@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/reduce_sum.dir/reduce_sum/main.cpp.o CMakeFiles/reduce_sum.dir/reduce_sum/taskflow.cpp.o -o reduce_sum  /usr/lib/gcc/x86_64-linux-gnu/7/libgomp.so -lpthread -lpthread 
