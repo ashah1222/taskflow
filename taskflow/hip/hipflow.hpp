@@ -818,7 +818,7 @@ class hipFlow {
     any non-negative integer @c n such that <tt>it + n</tt> is a valid iterator
     pointing to an element of the sequence, <tt>comp(*(it + n), *it)</tt>
     evaluates to false.
-     */hipFlow
+     */
     template <typename A, typename B, typename C, typename Comp>
     hipTask merge(A a_first, A a_last, B b_first, B b_last, C c_first, Comp comp);
 

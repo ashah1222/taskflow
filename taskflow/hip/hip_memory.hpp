@@ -532,7 +532,7 @@ class hipDeviceAllocator {
   @return the nubmer of elements that might be allcoated as maximum 
           by a call to member allocate
   */
-  size_type max_size() const noexcept { return size_type {-1}; }
+  size_type max_size() const noexcept { return static_cast<size_type>(-1); }
 
   /**
   @brief ignored to avoid de-referencing device pointer from the host
@@ -728,7 +728,7 @@ class hipUSMAllocator {
   @return the nubmer of elements that might be allcoated as maximum 
           by a call to member allocate
   */
-  size_type max_size() const noexcept { return size_type {-1}; }
+  size_type max_size() const noexcept { return static_cast<size_type>(-1); }
 
   /**
   @brief Constructs an element object on the location pointed by ptr.

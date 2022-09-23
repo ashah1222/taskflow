@@ -37,7 +37,7 @@ inline void hip_set_device(int id) {
 /**
 @brief obtains the device property
 */
-inline void hip_get_device_property(int i, hipDeviceProp& p) {
+inline void hip_get_device_property(int i, hipDeviceProp_t& p) {
   TF_CHECK_HIP(
     hipGetDeviceProperties(&p, i), "failed to get property of device ", i
   );
@@ -46,8 +46,8 @@ inline void hip_get_device_property(int i, hipDeviceProp& p) {
 /**
 @brief obtains the device property
 */
-inline hipDeviceProp hip_get_device_property(int i) {
-  hipDeviceProp p;
+inline hipDeviceProp_t hip_get_device_property(int i) {
+  hipDeviceProp_t p;
   TF_CHECK_HIP(
     hipGetDeviceProperties(&p, i), "failed to get property of device ", i
   );
@@ -57,7 +57,7 @@ inline hipDeviceProp hip_get_device_property(int i) {
 /**
 @brief dumps the device property
 */
-inline void hip_dump_device_property(std::ostream& os, const hipDeviceProp& p) {
+inline void hip_dump_device_property(std::ostream& os, const hipDeviceProp_t& p) {
 
   os << "Major revision number:         " << p.major << '\n'
      << "Minor revision number:         " << p.minor << '\n'
@@ -86,14 +86,14 @@ inline void hip_dump_device_property(std::ostream& os, const hipDeviceProp& p) {
   os << "Clock rate:                    " << p.clockRate << '\n'
      << "Total constant memory:         " << p.totalConstMem << '\n'
      << "Texture alignment:             " << p.textureAlignment << '\n'
-     << "Concurrent copy and execution: " << p.deviceOverlap << '\n'
+     // << "Concurrent copy and execution: " << p.c << '\n'
      << "Number of multiprocessors:     " << p.multiProcessorCount << '\n'
      << "Kernel execution timeout:      " << p.kernelExecTimeoutEnabled << '\n'
      << "GPU sharing Host Memory:       " << p.integrated << '\n'
      << "Host page-locked mem mapping:  " << p.canMapHostMemory << '\n'
-     << "Alignment for Surfaces:        " << p.surfaceAlignment << '\n'
-     << "Device has ECC support:        " << p.ECCEnabled << '\n'
-     << "Unified Addressing (UVA):      " << p.unifiedAddressing << '\n';
+     // << "Alignment for Surfaces:        " << p.surfaceAlignment << '\n'
+     << "Device has ECC support:        " << p.ECCEnabled << '\n';
+     // << "Unified Addressing (UVA):      " << p.unifiedAddressing << '\n';
 }
 
 /**
@@ -102,7 +102,7 @@ inline void hip_dump_device_property(std::ostream& os, const hipDeviceProp& p) {
 inline size_t hip_get_device_max_threads_per_block(int d) {
   int threads = 0;
   TF_CHECK_HIP(
-    hipDeviceGetAttribute(&threads, hipDevAttrMaxThreadsPerBlock, d),
+    hipDeviceGetAttribute(&threads, hipDeviceAttributeMaxThreadsPerBlock, d),
     "failed to query the maximum threads per block on device ", d
   )
   return threads;
@@ -114,7 +114,7 @@ inline size_t hip_get_device_max_threads_per_block(int d) {
 inline size_t hip_get_device_max_x_dim_per_block(int d) {
   int dim = 0;
   TF_CHECK_HIP(
-    hipDeviceGetAttribute(&dim, hipDevAttrMaxBlockDimX, d),
+    hipDeviceGetAttribute(&dim, hipDeviceAttributeMaxBlockDimX, d),
     "failed to query the maximum x-dimension per block on device ", d
   )
   return dim;
@@ -126,7 +126,7 @@ inline size_t hip_get_device_max_x_dim_per_block(int d) {
 inline size_t hip_get_device_max_y_dim_per_block(int d) {
   int dim = 0;
   TF_CHECK_HIP(
-    hipDeviceGetAttribute(&dim, hipDevAttrMaxBlockDimY, d),
+    hipDeviceGetAttribute(&dim, hipDeviceAttributeMaxBlockDimY, d),
     "failed to query the maximum y-dimension per block on device ", d
   )
   return dim;
@@ -138,7 +138,7 @@ inline size_t hip_get_device_max_y_dim_per_block(int d) {
 inline size_t hip_get_device_max_z_dim_per_block(int d) {
   int dim = 0;
   TF_CHECK_HIP(
-    hipDeviceGetAttribute(&dim, hipDevAttrMaxBlockDimZ, d),
+    hipDeviceGetAttribute(&dim, hipDeviceAttributeMaxBlockDimZ, d),
     "failed to query the maximum z-dimension per block on device ", d
   )
   return dim;
@@ -150,7 +150,7 @@ inline size_t hip_get_device_max_z_dim_per_block(int d) {
 inline size_t hip_get_device_max_x_dim_per_grid(int d) {
   int dim = 0;
   TF_CHECK_HIP(
-    hipDeviceGetAttribute(&dim, hipDevAttrMaxGridDimX, d),
+    hipDeviceGetAttribute(&dim, hipDeviceAttributeMaxGridDimX, d),
     "failed to query the maximum x-dimension per grid on device ", d
   )
   return dim;
@@ -162,7 +162,7 @@ inline size_t hip_get_device_max_x_dim_per_grid(int d) {
 inline size_t hip_get_device_max_y_dim_per_grid(int d) {
   int dim = 0;
   TF_CHECK_HIP(
-    hipDeviceGetAttribute(&dim, hipDevAttrMaxGridDimY, d),
+    hipDeviceGetAttribute(&dim, hipDeviceAttributeMaxGridDimY, d),
     "failed to query the maximum y-dimension per grid on device ", d
   )
   return dim;
@@ -174,7 +174,7 @@ inline size_t hip_get_device_max_y_dim_per_grid(int d) {
 inline size_t hip_get_device_max_z_dim_per_grid(int d) {
   int dim = 0;
   TF_CHECK_HIP(
-    hipDeviceGetAttribute(&dim, hipDevAttrMaxGridDimZ, d),
+    hipDeviceGetAttribute(&dim, hipDeviceAttributeMaxGridDimZ, d),
     "failed to query the maximum z-dimension per grid on device ", d
   )
   return dim;
@@ -186,7 +186,7 @@ inline size_t hip_get_device_max_z_dim_per_grid(int d) {
 inline size_t hip_get_device_max_shm_per_block(int d) {
   int num = 0;
   TF_CHECK_HIP(
-    hipDeviceGetAttribute(&num, hipDevAttrMaxSharedMemoryPerBlock, d),
+    hipDeviceGetAttribute(&num, hipDeviceAttributeMaxSharedMemoryPerBlock, d),
     "failed to query the maximum shared memory per block on device ", d
   )
   return num;
@@ -198,7 +198,7 @@ inline size_t hip_get_device_max_shm_per_block(int d) {
 inline size_t hip_get_device_warp_size(int d) {
   int num = 0;
   TF_CHECK_HIP(
-    hipDeviceGetAttribute(&num, hipDevAttrWarpSize, d),
+    hipDeviceGetAttribute(&num, hipDeviceAttributeWarpSize, d),
     "failed to query the warp size per block on device ", d
   )
   return num;
@@ -210,7 +210,7 @@ inline size_t hip_get_device_warp_size(int d) {
 inline int hip_get_device_compute_capability_major(int d) {
   int num = 0;
   TF_CHECK_HIP(
-    hipDeviceGetAttribute(&num, hipDevAttrComputeCapabilityMajor, d),
+    hipDeviceGetAttribute(&num, hipDeviceAttributeComputeCapabilityMajor, d),
     "failed to query the major number of compute capability of device ", d
   )
   return num;
@@ -222,7 +222,7 @@ inline int hip_get_device_compute_capability_major(int d) {
 inline int hip_get_device_compute_capability_minor(int d) {
   int num = 0;
   TF_CHECK_HIP(
-    hipDeviceGetAttribute(&num, hipDevAttrComputeCapabilityMinor, d),
+    hipDeviceGetAttribute(&num, hipDeviceAttributeComputeCapabilityMinor, d),
     "failed to query the minor number of compute capability of device ", d
   )
   return num;
@@ -234,7 +234,7 @@ inline int hip_get_device_compute_capability_minor(int d) {
 inline bool hip_get_device_unified_addressing(int d) {
   int num = 0;
   TF_CHECK_HIP(
-    hipDeviceGetAttribute(&num, hipDevAttrUnifiedAddressing, d),
+    hipDeviceGetAttribute(&num, hipDeviceAttributeUnifiedAddressing, d),
     "failed to query unified addressing status on device ", d
   )
   return num;

@@ -1,7 +1,8 @@
 #pragma once
 
 #include "hip_execution_policy.hpp"
-
+#include <hip/hip_runtime_api.h>
+#include <hip/hip_runtime.h> 
 namespace tf {
 
 // default warp size

@@ -1236,7 +1236,7 @@ inline void hipFlowCapturer::memcpy(
       hipMemcpyAsync(dst, src, count, hipMemcpyDefault, stream),
       "failed to capture memcpy"
     );
-  });TF_CHECK_HIP
+  });
 }
 
 // Function: copy
@@ -1282,4 +1282,3 @@ OPT& hipFlowCapturer::make_optimizer(ArgsT&&... args) {
 }
 
 }  // end of namespace tf -----------------------------------------------------
-

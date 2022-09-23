@@ -288,8 +288,8 @@ if(TF_BUILD_HIP)
   )
   # avoid cmake 3.18+ warning
   # we let nvcc to decide the flag if the architecture is not given
-  if(NOT hip_ARCHITECTURES)
-    set_property(TARGET hetero_traversal PROPERTY hip_ARCHITECTURES OFF)
+  if(NOT HIP_ARCHITECTURES)
+    set_property(TARGET hetero_traversal PROPERTY HIP_ARCHITECTURES OFF)
   endif()
 
 
