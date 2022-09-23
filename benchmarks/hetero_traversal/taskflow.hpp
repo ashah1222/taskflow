@@ -1,3 +1,4 @@
+#pragma once
 #include "graph.hpp"
 
 void taskflow(const Graph& g, unsigned num_cpus, unsigned num_gpus) {

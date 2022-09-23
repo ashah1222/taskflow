@@ -282,9 +282,9 @@ if(TF_BUILD_HIP)
     ${OpenMP_CXX_LIBRARIES} 
     tf::default_settings
   )
-  set_target_properties(hetero_traversal PROPERTIES LINKER_LANGUAGE HIPCXX)
+  # set_target_properties(hetero_traversal PROPERTIES LINKER_LANGUAGE HIPCXX)
   set_target_properties(
-    hetero_traversal PROPERTIES COMPILE_FLAGS "-Xcompiler ${HIPCXX_FLAGS}"
+    hetero_traversal PROPERTIES COMPILE_FLAGS "-Xcompiler ${CXX_FLAGS}"
   )
   # avoid cmake 3.18+ warning
   # we let nvcc to decide the flag if the architecture is not given

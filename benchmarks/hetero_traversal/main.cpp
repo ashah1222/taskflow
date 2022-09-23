@@ -1,6 +1,6 @@
 #include "graph.hpp"
 #include <CLI11.hpp>
-
+#include "taskflow.hpp"
 int main(int argc, char* argv[]) {
   
   CLI::App app{"HeteroTraversal"};
@@ -56,9 +56,9 @@ int main(int argc, char* argv[]) {
 
       Graph graph(i, 4*i, hip_ratio);
 
-      std::ofstream ofs(std::string("graph") + std::to_string(graph.size()) + ".txt");
-      graph.dump(ofs);
-      continue;
+      //std::ofstream ofs(std::string("graph") + std::to_string(graph.size()) + ".txt");
+      //graph.dump(ofs);
+      //continue;
       
       double runtime {0.0};
       double elapsed;

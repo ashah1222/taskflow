@@ -1,3 +1,4 @@
+#pragma once
 #include <taskflow/taskflow.hpp>
 #include <taskflow/hip/hipflow.hpp>
 #include <fstream>
