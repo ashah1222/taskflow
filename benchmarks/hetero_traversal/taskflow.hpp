@@ -16,7 +16,7 @@ void taskflow(const Graph& g, unsigned num_cpus, unsigned num_gpus) {
   TF_CHECK_HIP(hipMallocManaged(&gz, N*sizeof(int)), "failed at hipMalloc");
 
   tf::Taskflow taskflow;
-  tf::Executor executor(num_cpus + num_gpus);
+  tf::Executor executor (num_cpus + num_gpus);
 
   std::vector<tf::Task> tasks(g.num_nodes);
   

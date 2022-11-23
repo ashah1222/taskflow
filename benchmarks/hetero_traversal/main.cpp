@@ -1,6 +1,7 @@
 #include "graph.hpp"
 #include <CLI11.hpp>
 #include "taskflow.hpp"
+#include <fstream>
 int main(int argc, char* argv[]) {
   
   CLI::App app{"HeteroTraversal"};
@@ -50,14 +51,14 @@ int main(int argc, char* argv[]) {
 
     std::cout << std::setw(12) << "|V|+|E|"
               << std::setw(12) << "Runtime"
-               << '\n';
+               << '\n';   
 
-    for(int i=10; i<=20010; i += 500) {
+    for(int i=10; i<=4010; i += 500) {
 
       Graph graph(i, 4*i, hip_ratio);
 
-      //std::ofstream ofs(std::string("graph") + std::to_string(graph.size()) + ".txt");
-      //graph.dump(ofs);
+      std::ofstream ofs(std::string("graph") + std::to_string(graph.size()) + ".txt");
+      graph.dump(ofs);
       //continue;
       
       double runtime {0.0};
@@ -75,11 +76,13 @@ int main(int argc, char* argv[]) {
         if(j) {
           runtime += elapsed;
         }
+       
       }
 
       std::cout << std::setw(12) << graph.size() 
-                << std::setw(12) << runtime / num_rounds / 1e3
-                << std::endl;
+                << std::setw(12) << runtime / num_rounds / 1e3 
+                << std::endl;  
+     
     }
   }
   else {
@@ -109,7 +112,6 @@ int main(int argc, char* argv[]) {
     //          << std::endl;
     std::cout << runtime/num_rounds/1e3 << std::endl;
   }
-
   return 0;
 }
 

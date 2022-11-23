@@ -272,7 +272,19 @@ if(TF_BUILD_HIP)
   
   target_include_directories(
     hetero_traversal PRIVATE ${PROJECT_SOURCE_DIR}/3rd-party/CLI11
+    kmean_hipflow PRIVATE ${PROJECT_SOURCE_DIR}/3rd-party/CLI11
   )
+
+  add_executable(
+    kmean_hipflow
+    ${TF_BENCHMARK_DIR}/kmean_hipflow/kmean_hipflow.cpp
+  )
+
+  target_include_directories(
+    hetero_traversal PRIVATE ${PROJECT_SOURCE_DIR}/3rd-party/CLI11
+    kmean_hipflow PRIVATE ${PROJECT_SOURCE_DIR}/3rd-party/CLI11
+  )
+
   
   target_link_libraries(
     hetero_traversal 

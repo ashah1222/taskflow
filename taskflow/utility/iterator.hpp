@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <type_traits>
 
+using namespace std;
 namespace tf {
 
 template <typename T>
